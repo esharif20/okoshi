@@ -1,0 +1,44 @@
+.beat-rail {
+  position: absolute;
+  z-index: 2;
+  right: var(--margin);
+  top: 50%;
+  transform: translateY(-50%);
+}
+.beat-rail ol {
+  margin: 0;
+  padding: 0.5rem;
+  list-style: none;
+  display: grid;
+  background: var(--bg);
+  border-radius: 4px;
+}
+.beat-rail button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--muted);
+  font: 700 var(--step-small) / 1 var(--font-text);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--dur-quick) linear, background-color var(--dur-quick) linear, transform var(--dur-quick) var(--ease-out);
+}
+/* The mark beside each word: a small dot that becomes the red seal on the current one. */
+.beat-rail button::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform 320ms var(--ease-out), background-color var(--dur-quick) linear;
+}
+.beat-rail button:hover { color: var(--ink); background: var(--surface); transform: translateX(-3px); }
+.beat-rail button[aria-current] { color: var(--ink); }
+.beat-rail button[aria-current]::before { background: var(--accent); transform: scale(1.5); }
+#opening:not([data-edition="desktop"]) .beat-rail { display: none; }
+@media (max-width: 900px) { .beat-rail { display: none; } }

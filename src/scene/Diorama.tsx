@@ -4,28 +4,39 @@ import * as THREE from "three";
 import { stage } from "~/stage";
 import { FOV, orbitAt, orbitPose, type Key, type Orbit } from "./camera";
 import { Compound } from "./build/Compound";
-import { groundHeight, inFrame, Land, landState, SITE, toFrame, VIEW_AZIMUTH } from "./world/Land";
+import { groundHeight, inFrame, inHouse, Land, landState, SITE, toFrame, TURN, VIEW_AZIMUTH } from "./world/Land";
 
 const DEG = Math.PI / 180;
 
 // The camera's standpoints through the Opening sequence, aimed at points given in the picture's own frame.
 // Arrival: far back on the path at head height, the whole landscape ahead.
 const ARRIVAL: Orbit = { target: inFrame(0, 5.2, 0), polar: 89.6 * DEG, azimuth: VIEW_AZIMUTH, distance: 150 };
-// Approach: low along the path and through the gate, then up and over the site.
+// Approach: low along the path and through the Gate, then up and over the Sheet to read the Plan.
 const NEARING: Orbit = { target: inFrame(0.5, 4.2, 0), polar: 87 * DEG, azimuth: VIEW_AZIMUTH + 2 * DEG, distance: 92 };
-// Over the sheet: high enough to read the plan and look down into the rooms as they fold up.
 const OVER: Orbit = { target: inFrame(1.8, 1.6, 0.4), polar: 50 * DEG, azimuth: VIEW_AZIMUTH + 12 * DEG, distance: 78 };
-// Through Ink and Paint the view drifts round a little and comes down.
-const PAINTED: Orbit = { target: inFrame(2.0, 3.0, 0.2), polar: 62 * DEG, azimuth: VIEW_AZIMUTH + 3 * DEG, distance: 80 };
+// The build is watched from low down with a wider lens, so the buildings rise against the mountains
+// and the open front of the House shows its rooms like a stage.
+const RISING: Orbit = { target: inFrame(2.2, 5.4, 0), polar: 84 * DEG, azimuth: VIEW_AZIMUTH + 9 * DEG, distance: 56, fov: 24 };
+const PAINTED: Orbit = { target: inFrame(2.2, 5.8, 0), polar: 84.5 * DEG, azimuth: VIEW_AZIMUTH - 5 * DEG, distance: 58, fov: 24 };
 // The Plate: level with the buildings, the ranges behind them.
-const PLATE: Orbit = { target: inFrame(2.4, 6.6, 0), polar: 85.5 * DEG, azimuth: VIEW_AZIMUTH, distance: 84 };
+const PLATE: Orbit = { target: inFrame(2.4, 6.4, 0), polar: 85.5 * DEG, azimuth: VIEW_AZIMUTH, distance: 66, fov: 22 };
+// Entering: square to the House's front, up the steps, through the door, and into the Entrance.
+const FACING = VIEW_AZIMUTH + TURN;
+const DOOR_X = 2.5, EYE = 2.45;
+const DOORSTEP: Orbit = { target: inHouse(DOOR_X, EYE + 0.4, 0.2), polar: 88.5 * DEG, azimuth: FACING, distance: 17, fov: 34 };
+const THRESHOLD: Orbit = { target: inHouse(DOOR_X, EYE, 0.2), polar: 89.5 * DEG, azimuth: FACING, distance: 4.6, fov: 48 };
+const INSIDE: Orbit = { target: inHouse(DOOR_X + 0.4, EYE - 0.1, 0.2), polar: 90 * DEG, azimuth: FACING + 6 * DEG, distance: 2.0, fov: 58 };
 
 const KEYS: Key[] = [
-  { at: 0.04, orbit: ARRIVAL },
-  { at: 0.2, orbit: NEARING },
-  { at: 0.36, orbit: OVER },
-  { at: 0.88, orbit: PAINTED },
-  { at: 0.985, orbit: PLATE },
+  { at: 0.03, orbit: ARRIVAL },
+  { at: 0.17, orbit: NEARING },
+  { at: 0.28, orbit: OVER },
+  { at: 0.44, orbit: RISING },
+  { at: 0.72, orbit: PAINTED },
+  { at: 0.83, orbit: PLATE },
+  { at: 0.93, orbit: DOORSTEP },
+  { at: 0.975, orbit: THRESHOLD },
+  { at: 1, orbit: INSIDE },
 ];
 
 // The visitor can look around: the view leans a little towards the pointer, and a drag turns it.
@@ -38,13 +49,7 @@ function Rig() {
 
   useEffect(() => stage.subscribe(() => invalidate()), [invalidate]);
 
-  // The picture is composed for a wide screen. On a tall one the lens opens up so the same width is in view.
-  useEffect(() => {
-    const lens = camera as THREE.PerspectiveCamera;
-    lens.fov = FOV * Math.min(2.4, Math.max(1, 1.45 / (size.width / size.height)));
-    lens.updateProjectionMatrix();
-    invalidate();
-  }, [camera, size.width, size.height, invalidate]);
+  useEffect(() => invalidate(), [size.width, size.height, invalidate]);
 
   useEffect(() => {
     const el = gl.domElement;
@@ -89,15 +94,27 @@ function Rig() {
 
     const orbit = orbitAt(KEYS, progress);
     // Far from the site a small turn is a long walk, so the turn is held back until the camera is close.
-    const near = 1 - Math.min(1, Math.max(0, (orbit.distance - 90) / 60));
+    // It is also let go while the visitor is walked through the door.
+    const close = 1 - Math.min(1, Math.max(0, (orbit.distance - 90) / 60));
+    const free = (0.25 + 0.75 * close) * (1 - Math.min(1, Math.max(0, (progress - 0.84) / 0.06)));
     const pose = orbitPose({
       ...orbit,
-      azimuth: orbit.azimuth + look.turn * (0.25 + 0.75 * near) + look.leanX * 0.05,
-      polar: Math.min(89.8 * DEG, orbit.polar - look.leanY * 0.012),
+      azimuth: orbit.azimuth + (look.turn + look.leanX * 0.05) * free,
+      polar: Math.min(90 * DEG, orbit.polar - look.leanY * 0.012 * free),
     });
     // The camera stays above the ground wherever it is taken.
     const [fx, fz] = toFrame(pose.position[0], pose.position[2]);
-    pose.position[1] = Math.max(pose.position[1], groundHeight(fx, fz) + 2.4);
+    pose.position[1] = Math.max(pose.position[1], groundHeight(fx, fz) + 2.2);
+    // The lens: each standpoint has its own. The picture is composed for a wide screen, so on a tall one
+    // the lens opens further to keep the same width in view. Close to, the near plane comes in so nothing is cut.
+    const lens = camera as THREE.PerspectiveCamera;
+    const fov = Math.min(100, (orbit.fov ?? FOV) * Math.min(2.4, Math.max(1, 1.45 / (size.width / size.height))));
+    const near = Math.min(2, Math.max(0.12, orbit.distance * 0.03));
+    if (Math.abs(lens.fov - fov) > 0.001 || Math.abs(lens.near - near) > 0.001) {
+      lens.fov = fov;
+      lens.near = near;
+      lens.updateProjectionMatrix();
+    }
     camera.position.set(...pose.position);
     camera.up.set(...pose.up);
     camera.lookAt(...pose.target);

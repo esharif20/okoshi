@@ -70,6 +70,15 @@ const smooth = (a: number, b: number, x: number) => {
 /** How the buildings and their sheet of paper are turned within the picture. */
 export const TURN = -0.5;
 export const SHEET = { x: 1.5, z: 0.4, w: 31, d: 20 };
+/** Where the House and the Pagoda stand on the sheet. */
+export const HOUSE_AT: [number, number, number] = [-3.4, 0.06, 0.4];
+export const PAGODA_AT: [number, number, number] = [9.6, 0.06, -1.2];
+/** A point given in the House's own frame (x along its front, z out of its front door), in world coordinates. */
+export function inHouse(x: number, y: number, z: number): [number, number, number] {
+  const X = x + HOUSE_AT[0], Z = z + HOUSE_AT[2];
+  const c = Math.cos(TURN), s = Math.sin(TURN);
+  return inFrame(X * c + Z * s, y + HOUSE_AT[1], -X * s + Z * c);
+}
 /** 1 well inside the sheet the buildings stand on, 0 outside, soft at the edge. */
 export function onSheet(x: number, z: number, margin = 0): number {
   const c = Math.cos(TURN), s = Math.sin(TURN);
@@ -278,18 +287,18 @@ type Range = { z: number; width: number; depth: number; height: number; seed: nu
 // Real ground, raised into ranges and lit by the same sun as everything else, so each has a lit side and a
 // shaded side. Distance is painted in: the farther a range, the paler and pinker it is.
 const RANGES: Range[] = [
-  { z: -330, width: 1700, depth: 150, height: 50, seed: 7.7, rock: "#c39dac", haze: "#f3ddd6", snow: 1, fade: 0.45 },
-  { z: -240, width: 1300, depth: 110, height: 31, seed: 4.1, rock: "#a98699", haze: "#efd5d0", snow: 0.5, fade: 0.26 },
-  { z: -170, width: 1000, depth: 80, height: 17, seed: 2.6, rock: "#8f768b", haze: "#e6c9c8", snow: 0, fade: 0.1 },
+  { z: -330, width: 1700, depth: 160, height: 62, seed: 7.7, rock: "#b98fa2", haze: "#f3ddd6", snow: 1, fade: 0.38 },
+  { z: -240, width: 1300, depth: 120, height: 38, seed: 4.1, rock: "#a07c92", haze: "#efd5d0", snow: 0.55, fade: 0.2 },
+  { z: -170, width: 1000, depth: 84, height: 20, seed: 2.6, rock: "#836a82", haze: "#e6c9c8", snow: 0, fade: 0.06 },
 ];
 
 function mountains(r: Range): THREE.BufferGeometry {
-  const cols = 520, rows = 64;
+  const cols = 640, rows = 90;
   const g = new THREE.PlaneGeometry(r.width, r.depth, cols, rows);
   g.rotateX(-Math.PI / 2);
   const pos = g.attributes.position as THREE.BufferAttribute;
   const colour = new Float32Array(pos.count * 3);
-  const rock = linear(r.rock), haze = linear(r.haze), white = linear("#fffaf6"), c = new THREE.Color();
+  const rock = linear(r.rock), haze = linear(r.haze), c = new THREE.Color();
   const F = 2.3 / r.depth;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
@@ -312,7 +321,6 @@ function mountains(r: Range): THREE.BufferGeometry {
     const t = h / r.height;
     c.copy(haze).lerp(rock, smooth(0.06, 0.4, t));
     c.multiplyScalar(0.96 + 0.08 * noise(x * 0.05, z * 0.05));
-    if (r.snow) c.lerp(white, r.snow * smooth(0.5, 0.74, t + (noise(x * F * 6, z * F * 6) - 0.5) * 0.16));
     c.lerp(haze, r.fade);
     colour.set([c.r, c.g, c.b], i * 3);
   }
@@ -321,14 +329,63 @@ function mountains(r: Range): THREE.BufferGeometry {
   return g;
 }
 
+/**
+ * The surface of a range. The mesh gives the big forms and the sun gives them a lit and a shaded side;
+ * this adds what a painter would: bands of strata, gullies running downhill, scree, and snow that lies
+ * only where the slope is gentle enough to hold it. No fog: at this distance it would erase the ranges,
+ * so their haze is in their colours.
+ */
+function rockMaterial(r: Range): THREE.MeshLambertMaterial {
+  const m = new THREE.MeshLambertMaterial({ vertexColors: true, fog: false });
+  const own = { uHeight: { value: r.height }, uSnow: { value: r.snow }, uKeep: { value: 1 - r.fade }, uHaze: { value: linear(r.haze) } };
+  m.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, own, landState);
+    shader.vertexShader = shader.vertexShader
+      .replace("void main() {", "varying vec3 vRock;\nvarying vec3 vRockN;\nvoid main() {")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvRock = position;\nvRockN = normal;");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("void main() {", `uniform float uHeight, uSnow, uKeep, uNight;\nuniform vec3 uHaze;\nvarying vec3 vRock;\nvarying vec3 vRockN;\n${NOISE}\nvoid main() {`)
+      .replace(
+        "#include <color_fragment>",
+        /* glsl */ `#include <color_fragment>
+        {
+          vec3 n = normalize(vRockN);
+          float steep = 1.0 - n.y;
+          float t = vRock.y / uHeight;
+          vec3 rock = diffuseColor.rgb;
+          // Strata: thin bands that tilt and wander, strongest on steep faces where rock is bare.
+          float tilt = vRock.y * 1.5 + vRock.x * 0.07 + lFbm(vRock.xz * 0.03) * 16.0 + lFbm(vRock.xz * 0.2) * 3.0;
+          float strata = smoothstep(0.3, 0.7, sin(tilt) * 0.5 + 0.5);
+          rock *= mix(1.0, mix(0.9, 1.05, strata), smoothstep(0.25, 0.65, steep) * 0.7);
+          // Gullies: narrow dark lines following the fall of the slope.
+          vec2 fall = normalize(n.xz + 0.0001);
+          float across = dot(vRock.xz, vec2(-fall.y, fall.x));
+          float gully = smoothstep(0.62, 0.9, lNoise(vec2(across * 0.42, vRock.y * 0.05)));
+          rock *= 1.0 - gully * 0.24 * smoothstep(0.15, 0.5, steep);
+          // Scree and scrub: the gentle lower ground is paler and mottled.
+          float lower = (1.0 - smoothstep(0.1, 0.4, t)) * (1.0 - smoothstep(0.1, 0.4, steep));
+          rock = mix(rock, rock * vec3(1.06, 1.05, 0.98), lower * (0.5 + 0.5 * lFbm(vRock.xz * 0.2)));
+          rock *= 0.94 + 0.12 * lFbm(vRock.xz * 0.5 + vRock.y * 0.3);
+          // Snow holds on gentle slopes high up and lies in streaks on the steep ones.
+          float line = t + (lFbm(vRock.xz * 0.06) - 0.5) * 0.3;
+          float snow = uSnow * smoothstep(0.42, 0.6, line) * (1.0 - smoothstep(0.28, 0.62, steep - lFbm(vRock.xz * 0.25) * 0.25));
+          rock = mix(rock, vec3(1.0, 0.985, 0.975), snow * 0.94);
+          // What distance takes away: detail fades towards the haze the range was given.
+          diffuseColor.rgb = mix(uHaze, rock, uKeep + (1.0 - uKeep) * 0.35 * smoothstep(0.0, 0.5, t));
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.3, 0.36, 0.48), uNight);
+        }`,
+      );
+  };
+  m.customProgramCacheKey = () => "okoshi-rock";
+  return m;
+}
+
 // ---------------------------------------------------------------------------------------------- land
 
 export function Land() {
   const { scene } = useThree();
   const sky = useMemo(skyMaterial, []);
-  const ranges = useMemo(() => RANGES.map((r) => ({ ...r, geometry: mountains(r) })), []);
-  // No fog on the ranges: at this distance it would erase them. Their haze is painted into their colours.
-  const rangeMaterial = useMemo(() => new THREE.MeshLambertMaterial({ vertexColors: true, fog: false }), []);
+  const ranges = useMemo(() => RANGES.map((r) => ({ ...r, geometry: mountains(r), material: rockMaterial(r) })), []);
   const earth = useMemo(ground, []);
   const earthMaterial = useMemo(() => new THREE.MeshLambertMaterial({ vertexColors: true }), []);
   const field = useMemo(grass, []);
@@ -361,7 +418,7 @@ export function Land() {
       {/* Everything below is squared to the composed view, so the ranges run level across the picture. */}
       <group position={SITE} rotation={[0, VIEW_AZIMUTH, 0]}>
         {ranges.map((r) => (
-          <mesh key={r.z} geometry={r.geometry} material={rangeMaterial} position={[0, 0.5, r.z]} />
+          <mesh key={r.z} geometry={r.geometry} material={r.material} position={[0, 0.5, r.z]} />
         ))}
         <mesh geometry={earth} material={earthMaterial} receiveShadow />
         <primitive object={field} />

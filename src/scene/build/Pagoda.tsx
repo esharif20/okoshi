@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { layers } from "~/content";
 import { progressAt, type FoldPlan } from "~/scene/fold";
 import { elevation } from "./elevation";
+import { brackets, railing } from "./detail";
 import { painted, paintState, slab } from "./painted";
 import { stage } from "~/stage";
 import type { LayerId } from "~/content";
@@ -55,8 +56,9 @@ export function Pagoda({ build }: { build: () => number }) {
           body: new THREE.BoxGeometry(w, BODY, w),
           bodyMaterials: [wall, wall, m.timber, m.timber, wall, wall],
           deck: slab(w + 1.5, 0.12, w + 1.5),
-          rail: slab(w + 1.3, 0.1, 0.08),
+          rail: railing(w + 1.3),
           bracket: slab(w + 0.6, 0.24, w + 0.6),
+          blocks: brackets(w + 0.3, 0.12 + BODY - 0.12),
           slopes: hipped(eave, eave, ROOF_SHAPE),
           trim: trim(eave, eave, ROOF_SHAPE, 0.085),
           rafters: rafters(eave, eave, ROOF_SHAPE, 0.4),
@@ -114,7 +116,7 @@ export function Pagoda({ build }: { build: () => number }) {
         <group key={s.layer} ref={(g) => { groups.current[i] = g; }} visible={false} userData={{ layer: s.layer }}>
           <mesh
             position={[0, 1, 0]}
-            onPointerOver={(e) => { e.stopPropagation(); if (stage.getState().progress > 0.5) stage.setState({ hoveredLayer: s.layer as LayerId, hoveredRoom: null }); }}
+            onPointerOver={(e) => { e.stopPropagation(); if (stage.getState().progress > 0.4 && stage.getState().progress < 0.84) stage.setState({ hoveredLayer: s.layer as LayerId, hoveredRoom: null }); }}
             onPointerOut={() => { if (stage.getState().hoveredLayer === s.layer) stage.setState({ hoveredLayer: null }); }}
           >
             <boxGeometry args={[s.w + 2.6, PITCH, s.w + 2.6]} />
@@ -122,16 +124,8 @@ export function Pagoda({ build }: { build: () => number }) {
           </mesh>
           <mesh geometry={s.deck} material={m.boards} position={[0, 0.06, 0]} castShadow receiveShadow />
           <mesh geometry={s.body} material={s.bodyMaterials} position={[0, 0.12 + BODY / 2, 0]} castShadow receiveShadow />
-          {[0, 1, 2, 3].map((k) => (
-            <mesh
-              key={k}
-              geometry={s.rail}
-              material={m.timber}
-              position={[k % 2 ? ((k - 2) * (s.w + 1.3)) / 2 : 0, 0.6, k % 2 ? 0 : ((k - 1) * (s.w + 1.3)) / 2]}
-              rotation={[0, k % 2 ? Math.PI / 2 : 0, 0]}
-              castShadow
-            />
-          ))}
+          <mesh geometry={s.rail} material={m.timber} position={[0, 0.12, 0]} castShadow />
+          <mesh geometry={s.blocks} material={m.timber} castShadow />
           <mesh geometry={s.bracket} material={m.timber} position={[0, 0.12 + BODY + 0.1, 0]} castShadow />
           <group position={[0, 0.12 + BODY + 0.2, 0]}>
             {s.slopes.map((sl, k) => (

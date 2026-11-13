@@ -10,11 +10,11 @@ const OUT = path.join(__dirname, "../../public/poster");
 // One still for each state of the Opening sequence, at the progress where it reads best.
 const SHOTS = [
   ["arrival", 0],
-  ["plan", 0.36],
-  ["fold", 0.52],
-  ["ink", 0.7],
-  ["paint", 0.84],
-  ["plate", 1],
+  ["plan", 0.28],
+  ["fold", 0.44],
+  ["ink", 0.57],
+  ["paint", 0.66],
+  ["plate", 0.83],
 ];
 const SIZES = [
   ["wide", 1600, 1000],

@@ -5,7 +5,7 @@ export type V3 = [number, number, number];
 export type Pose = { position: V3; target: V3; up: V3 };
 
 /** Orbit pose: `polar` is the angle from straight overhead, `azimuth` swings the camera to the right. */
-export type Orbit = { target: V3; polar: number; azimuth: number; distance: number };
+export type Orbit = { target: V3; polar: number; azimuth: number; distance: number; /** Lens angle in degrees; FOV when absent. */ fov?: number };
 
 export const FOV = 15; // degrees; a long lens, so the buildings read like a print and the ranges stand tall
 
@@ -27,6 +27,7 @@ const mix = (a: number, b: number, u: number) => a + (b - a) * u;
 function mixOrbit(a: Orbit, b: Orbit, u: number): Orbit {
   return {
     target: [mix(a.target[0], b.target[0], u), mix(a.target[1], b.target[1], u), mix(a.target[2], b.target[2], u)],
+    fov: mix(a.fov ?? FOV, b.fov ?? FOV, u),
     polar: mix(a.polar, b.polar, u),
     azimuth: mix(a.azimuth, b.azimuth, u),
     distance: mix(a.distance, b.distance, u),

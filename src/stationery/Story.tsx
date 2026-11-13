@@ -9,6 +9,7 @@ const LINES: Partial<Record<Beat, string>> = {
   ink: "Drawn in detail.",
   paint: "And finished properly.",
   plate: "The house holds the work. The pagoda is the stack.",
+  enter: "Come in.",
 };
 
 export function Story() {

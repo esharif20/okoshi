@@ -1,0 +1,22 @@
+.cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--accent-ink);
+  pointer-events: none;
+  visibility: hidden;
+  font: 700 0.875rem / 1 var(--font-text);
+  transition: width 320ms var(--ease-out), height 320ms var(--ease-out), background-color 200ms linear;
+}
+.cursor span { opacity: 0; transition: opacity 160ms linear; white-space: nowrap; }
+.cursor[data-state="press"] { width: 44px; height: 44px; background: color-mix(in srgb, var(--accent) 28%, transparent); }
+.cursor[data-state="label"] { width: 84px; height: 84px; background: var(--accent); }
+.cursor[data-state="label"] span { opacity: 1; }
+@media (pointer: coarse), (prefers-reduced-motion: reduce) { .cursor { display: none; } }

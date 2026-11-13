@@ -2,7 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { beatProgress, stage } from "~/stage";
-import { landState, SHEET, SITE, TURN, VIEW_AZIMUTH } from "../world/Land";
+import { HOUSE_AT, landState, PAGODA_AT, SHEET, SITE, TURN, VIEW_AZIMUTH } from "../world/Land";
 import { Garden } from "./Garden";
 import { Hall } from "./Hall";
 import { Pagoda } from "./Pagoda";
@@ -46,10 +46,10 @@ export function Compound() {
           <planeGeometry args={[SHEET.w - 1, SHEET.d - 1]} />
           <meshLambertMaterial ref={sheet} map={paper} transparent />
         </mesh>
-        <group position={[-3.4, 0.06, 0.4]}>
+        <group position={HOUSE_AT}>
           <Hall build={() => clamp01(fold() / 0.85)} />
         </group>
-        <group position={[9.6, 0.06, -1.2]}>
+        <group position={PAGODA_AT}>
           <Pagoda build={() => clamp01((fold() - 0.3) / 0.7)} />
         </group>
       </group>

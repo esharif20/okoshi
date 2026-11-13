@@ -6,8 +6,8 @@
   padding: 0;
   list-style: none;
   pointer-events: none;
-  /* In view from the end of the Approach to the start of the Plate. */
-  opacity: calc(min(1, max(0, (var(--progress, 0) - 0.33) * 22)) * min(1, max(0, (0.9 - var(--progress, 0)) * 22)));
+  /* In view while the Plan is read from above; once the camera comes down, pointing at a Room names it. */
+  opacity: calc(min(1, max(0, (var(--progress, 0) - 0.26) * 22)) * min(1, max(0, (0.4 - var(--progress, 0)) * 22)));
 }
 .room-labels li {
   position: absolute;

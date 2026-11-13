@@ -21,7 +21,7 @@ export const paintState = {
 
 const DECLARE = /* glsl */ `
 uniform float uInk, uPaint, uTop, uDotScale, uShown, uPrinted, uLift, uLiftRadius;
-uniform vec3 uLiftAt;
+uniform vec3 uLiftAt, uHoleAt, uHoleAlong, uHole;
 uniform vec3 uPaper, uInkColour;
 varying vec3 vPaintWorld;
 float pHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -34,6 +34,12 @@ float pNoise(vec2 p) {
 
 const COMPOSE = /* glsl */ `
 {
+  // A doorway: the screens slide apart from the middle. uHole is (half width, half height, how far open).
+  if (uHole.z > 0.0) {
+    vec3 fromDoor = vPaintWorld - uHoleAt;
+    float along = dot(fromDoor, uHoleAlong);
+    if (abs(along) < uHole.x * uHole.z && abs(fromDoor.y) < uHole.y && length(fromDoor - along * uHoleAlong - vec3(0.0, fromDoor.y, 0.0)) < 0.6) discard;
+  }
   // A flap prints onto the sheet grain by grain just before it lifts.
   if (uShown < 1.0 && pNoise(vPaintWorld.xz * 9.0) * 0.55 + pHash(floor(vPaintWorld.xz * 40.0)) * 0.45 > uShown) discard;
   float tone = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
@@ -91,7 +97,13 @@ export function painted(map: THREE.Texture, o: PaintedOptions = {}): THREE.MeshS
     emissiveIntensity: 0,
   });
   // `uShown` lets a flap print in before it lifts; `uPrinted` marks a surface that is a drawing from the start (the plan).
-  const own = { uShown: { value: 1 }, uPrinted: { value: o.printed ? 1 : 0 } };
+  const own = {
+    uShown: { value: 1 },
+    uPrinted: { value: o.printed ? 1 : 0 },
+    uHoleAt: { value: new THREE.Vector3() },
+    uHoleAlong: { value: new THREE.Vector3(1, 0, 0) },
+    uHole: { value: new THREE.Vector3(0, 0, 0) },
+  };
   material.userData.own = own;
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, paintState, own);
@@ -119,4 +131,12 @@ export function slab(w: number, h: number, d: number): THREE.BoxGeometry {
 /** How far a material has printed onto the sheet: 0 not there, 1 whole. */
 export function setShown(material: THREE.Material, shown: number) {
   (material.userData.own as { uShown: { value: number } }).uShown.value = shown;
+}
+
+/** Opens a doorway in a wall: centred at `at`, running along `along` (both in the world), `open` from 0 to 1. */
+export function setDoor(material: THREE.Material, at: THREE.Vector3, along: THREE.Vector3, halfWidth: number, halfHeight: number, open: number) {
+  const own = material.userData.own as { uHoleAt: { value: THREE.Vector3 }; uHoleAlong: { value: THREE.Vector3 }; uHole: { value: THREE.Vector3 } };
+  own.uHoleAt.value.copy(at);
+  own.uHoleAlong.value.copy(along);
+  own.uHole.value.set(halfWidth, halfHeight, open);
 }

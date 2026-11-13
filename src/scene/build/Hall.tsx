@@ -5,7 +5,8 @@ import { poseAt, progressAt, type FoldPlan } from "~/scene/fold";
 import { beatProgress, stage } from "~/stage";
 import { elevation } from "./elevation";
 import { Flap, rectangle } from "./Flap";
-import { painted, paintState, setShown, slab } from "./painted";
+import { gable, ornament } from "./detail";
+import { painted, paintState, setDoor, setShown, slab } from "./painted";
 import type { RoomId } from "~/content";
 import { hipped, rafters, trim } from "./roof";
 import { floorPlan, plaster, stone, tiles, wood, type PlanRoom } from "./textures";
@@ -68,12 +69,20 @@ const PICK: Partial<Record<RoomId, { at: [number, number, number]; size: [number
   lookout: { at: [-1.5, 0.5, 3.7], size: [7, 1, 1.2] },
 };
 /** Rooms answer the pointer once they stand, and while the visitor is still in the Opening sequence. */
-const pickable = () => stage.getState().progress > 0.5;
+const pickable = () => {
+  const p = stage.getState().progress;
+  return p > 0.4 && p < 0.84;
+};
+/** The door the visitor is walked through: its centre along the front wall, in the House's own frame. */
+const DOOR = { x: 2.5, halfWidth: 0.82, halfHeight: 1.12 };
 
 export function Hall({ build }: { build: () => number }) {
   const hinges = useRef(new Map<string, THREE.Group>());
   const root = useRef<THREE.Group>(null);
   const pin = useMemo(() => new THREE.Vector3(), []);
+  const along = useMemo(() => new THREE.Vector3(), []);
+  const lamp = useRef<THREE.PointLight>(null);
+  const furnish = useRef<THREE.Group>(null);
   const storey = useRef<THREE.Group>(null);
   const posts = useRef<THREE.Group>(null);
   const roof = useRef<THREE.Group>(null);
@@ -99,6 +108,11 @@ export function Hall({ build }: { build: () => number }) {
       inner5: painted(elevation({ width: 5, height: INNER, bays: 3, screens: [0, 1, 2], seed: 14 }), glow),
       inner3: painted(elevation({ width: 3, height: INNER, bays: 2, screens: [0, 1], seed: 17 }), glow),
       floor: painted(floorPlan(W, D, ROOMS), { bump: 0.25, printed: true }),
+      gold: new THREE.MeshStandardMaterial({ color: "#d2ab62", metalness: 0.55, roughness: 0.42 }),
+      slate: painted(plaster("#59707c", 51), { bump: 0.2 }),
+      red: painted(plaster("#b9424a", 52), { bump: 0.2 }),
+      cream: painted(plaster("#efe6d2", 53), { bump: 0.2 }),
+      green: painted(plaster("#6f8a72", 54), { bump: 0.2 }),
     };
   }, []);
 
@@ -107,6 +121,8 @@ export function Hall({ build }: { build: () => number }) {
     return {
       slopes,
       trim: trim(ROOF.w, ROOF.d, ROOF.shape),
+      gable: gable(3.6, 1.55, 2.6),
+      ornament: ornament(),
       rafters: rafters(ROOF.w, ROOF.d, ROOF.shape),
       ridge: slab(ROOF.w - ROOF.d + 0.7, 0.42, 0.5),
       finial: slab(0.36, 0.5, 0.58),
@@ -118,6 +134,10 @@ export function Hall({ build }: { build: () => number }) {
       beamLong: slab(DECK.hx * 2 - 0.3, 0.26, 0.24),
       beamShort: slab(0.24, 0.26, DECK.hz * 2 - 0.3),
       step: slab(2.6, 0.24, 0.5),
+      desk: slab(1.5, 0.34, 0.62),
+      shelf: slab(0.4, 1.6, 2.4),
+      bench: slab(2.6, 0.84, 0.74),
+      table: slab(2.4, 0.32, 0.9),
     };
   }, []);
 
@@ -178,6 +198,21 @@ export function Hall({ build }: { build: () => number }) {
     const inner = smooth(0, 0.12, done.get("inner-back-left") ?? 0);
     setShown(m.inner5, inner);
     setShown(m.inner3, inner);
+    // Entering: the screens of the Entrance slide apart and the lamp inside comes up.
+    const entering = beatProgress(stage.getState().progress, "enter");
+    if (root.current) {
+      pin.set(DOOR.x, PLINTH + 0.14 + DOOR.halfHeight, D / 2);
+      const at = root.current.localToWorld(pin);
+      along.set(DOOR.x + 1, PLINTH + 0.14 + DOOR.halfHeight, D / 2);
+      root.current.localToWorld(along).sub(at).normalize();
+      setDoor(m.front, at, along, DOOR.halfWidth, DOOR.halfHeight, smooth(0.2, 0.62, entering));
+    }
+    if (lamp.current) lamp.current.intensity = 26 * smooth(0.1, 0.7, entering);
+    const furnished = smooth(0.2, 1, done.get("inner-back-left") ?? 0);
+    if (furnish.current) {
+      furnish.current.visible = furnished > 0;
+      furnish.current.scale.y = Math.max(furnished, 0.001);
+    }
     // The Plate closes the House: the front wall folds up, the veranda posts rise, the roof is lowered on.
     const plate = beatProgress(stage.getState().progress, "plate");
     setShown(m.front, smooth(0, 0.06, plate));
@@ -205,7 +240,7 @@ export function Hall({ build }: { build: () => number }) {
       {rectangle(DECK.hx, DECK.hz).map((s) => (
         <Flap key={s.id} from={s.from} to={s.to} height={PLINTH} face={m.stoneM} edge={m.stoneM} thickness={0.3} hinge={keep(`footing-${s.id}`)} />
       ))}
-      <group ref={steps} position={[3.5, 0, DECK.hz + 0.25]} visible={false}>
+      <group ref={steps} position={[DOOR.x, 0, DECK.hz + 0.25]} visible={false}>
         <mesh geometry={geo.step} material={m.stoneM} position={[0, 0.12, 0.5]} castShadow receiveShadow />
         <mesh geometry={geo.step} material={m.stoneM} position={[0, 0.36, 0.05]} castShadow receiveShadow />
       </group>
@@ -237,6 +272,48 @@ export function Hall({ build }: { build: () => number }) {
             hinge={keep(`inner-${w.id}`)}
           />
         ))}
+        <pointLight ref={lamp} position={[3.6, 2.5, 1.2]} color="#ffd9a0" intensity={0} distance={9} decay={1.6} />
+        {/* What is in the Rooms: the house is old, the things in it are his. */}
+        <group ref={furnish} visible={false}>
+          {/* Study: a low desk with a lit screen, and a shelf of volumes. */}
+          <mesh geometry={geo.desk} material={m.boards} position={[2.2, 0.17, -1.5]} castShadow receiveShadow />
+          <mesh position={[2.2, 0.62, -1.72]} rotation={[-0.12, 0, 0]}>
+            <boxGeometry args={[0.78, 0.5, 0.04]} />
+            <meshStandardMaterial color="#1f3038" emissive="#bfe3ee" emissiveIntensity={0.9} />
+          </mesh>
+          <mesh geometry={geo.shelf} material={m.timber} position={[4.75, 0.8, -1.5]} castShadow />
+          {[m.slate, m.red, m.cream, m.slate, m.green, m.cream, m.red, m.slate].map((mat, i) => (
+            <mesh key={i} material={mat} position={[4.66, 0.52 + (i % 2) * 0.62, -2.45 + Math.floor(i / 2) * 0.5 + (i % 2) * 0.12]} castShadow>
+              <boxGeometry args={[0.3, 0.44, 0.3]} />
+            </mesh>
+          ))}
+          {/* Workshop: a bench with a board on it, and a chest of parts. */}
+          <mesh geometry={geo.bench} material={m.timber} position={[-2.9, 0.42, -2.35]} castShadow receiveShadow />
+          <mesh material={m.green} position={[-3.2, 0.87, -2.3]} castShadow>
+            <boxGeometry args={[0.7, 0.05, 0.46]} />
+          </mesh>
+          <mesh material={m.slate} position={[-2.2, 0.95, -2.4]} castShadow>
+            <boxGeometry args={[0.42, 0.22, 0.3]} />
+          </mesh>
+          <mesh material={m.boards} position={[-4.3, 0.3, -0.7]} castShadow>
+            <boxGeometry args={[0.9, 0.6, 0.6]} />
+          </mesh>
+          {/* Great Hall: a long low table and cushions. */}
+          <mesh geometry={geo.table} material={m.boards} position={[-1.6, 0.16, 1.5]} castShadow receiveShadow />
+          {[-2.7, -1.6, -0.5].map((x) => (
+            <mesh key={x} material={m.slate} position={[x, 0.07, 2.35]} castShadow>
+              <boxGeometry args={[0.62, 0.1, 0.62]} />
+            </mesh>
+          ))}
+          {/* Entrance: a bench for shoes, and the lamp. */}
+          <mesh material={m.timber} position={[4.5, 0.22, 0.5]} castShadow>
+            <boxGeometry args={[0.7, 0.44, 0.36]} />
+          </mesh>
+          <mesh position={[3.6, 2.35, 1.2]}>
+            <boxGeometry args={[0.34, 0.44, 0.34]} />
+            <meshStandardMaterial color="#fff3dc" emissive="#ffcf8a" emissiveIntensity={0.8} />
+          </mesh>
+        </group>
         {/* What the pointer finds: one unseen volume per Room. */}
         {(Object.keys(PINS) as RoomId[]).filter((id) => id in PICK).map((id) => (
           <mesh
@@ -268,6 +345,15 @@ export function Hall({ build }: { build: () => number }) {
           ))}
           <mesh geometry={geo.trim} material={m.pale} castShadow />
           <mesh geometry={geo.rafters} material={m.timber} castShadow />
+          {/* A gable on the front slope, over the door. */}
+          <group position={[DOOR.x - 2.5, 1.0, ROOF.d / 2 - 2.5]}>
+            <mesh geometry={geo.gable.face} material={m.cream} castShadow />
+            <mesh geometry={geo.gable.frame} material={m.timber} castShadow />
+            <mesh geometry={geo.gable.roof} material={m.tile} castShadow />
+          </group>
+          {[1, -1].map((s) => (
+            <mesh key={`o${s}`} geometry={geo.ornament} material={m.gold} position={[(s * (ROOF.w - ROOF.d + 0.5)) / 2, ROOF.shape.rise + 0.6, 0]} rotation={[0, s === 1 ? 0 : Math.PI, 0]} castShadow />
+          ))}
           <mesh geometry={geo.ridge} material={m.pale} position={[0, ROOF.shape.rise + 0.2, 0]} castShadow />
           {[1, -1].map((s) => (
             <mesh key={s} geometry={geo.finial} material={m.pale} position={[(s * (ROOF.w - ROOF.d + 0.7)) / 2, ROOF.shape.rise + 0.4, 0]} castShadow />

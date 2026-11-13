@@ -61,6 +61,19 @@ export function wood(colour: string, seed = 5): THREE.CanvasTexture {
     g.bezierCurveTo(SIZE * 0.3, y + (r() - 0.5) * 9, SIZE * 0.7, y + (r() - 0.5) * 9, SIZE, y);
     g.stroke();
   }
+  // Board joints and a few knots.
+  g.fillStyle = "rgba(30,18,12,0.5)";
+  for (let k = 1; k < 4; k++) g.fillRect(0, (k * SIZE) / 4 - 1.5, SIZE, 3);
+  for (let i = 0; i < 6; i++) {
+    const x = r() * SIZE, y = r() * SIZE, rad = 5 + r() * 9;
+    for (let k = 3; k > 0; k--) {
+      g.strokeStyle = `rgba(35,20,12,${0.12 * k})`;
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.ellipse(x, y, rad * (k / 3) * 1.6, rad * (k / 3), 0, 0, 7);
+      g.stroke();
+    }
+  }
   grain(g, r, 0.06, 0.02);
   return finish(c, 1.6);
 }

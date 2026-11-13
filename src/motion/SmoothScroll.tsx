@@ -1,6 +1,15 @@
 import { useEffect, type ReactNode } from "react";
 import { stage } from "~/stage";
 
+// The running Lenis, if there is one, so other parts of the page can ask for a scroll.
+let running: { scrollTo: (y: number, o?: { duration?: number }) => void } | null = null;
+
+/** Scrolls the page to `y`, smoothly where the visitor wants movement. */
+export function scrollToY(y: number) {
+  if (running) running.scrollTo(y, { duration: 1.6 });
+  else window.scrollTo({ top: y });
+}
+
 type Props = { children: ReactNode; openingId?: string };
 
 // One scroll source for the page and the Diorama: Lenis, driven by GSAP's ticker, feeding ScrollTrigger.
@@ -19,6 +28,7 @@ export function SmoothScroll({ children, openingId = "opening" }: Props) {
       gsap.registerPlugin(ScrollTrigger);
       const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
       const lenis = reduced ? null : new Lenis({ autoRaf: false, lerp: 0.1 });
+      running = lenis;
       const tick = (time: number) => lenis?.raf(time * 1000);
       if (lenis) {
         lenis.on("scroll", ScrollTrigger.update);
@@ -38,6 +48,7 @@ export function SmoothScroll({ children, openingId = "opening" }: Props) {
         st?.kill();
         gsap.ticker.remove(tick);
         lenis?.destroy();
+        running = null;
       };
     })();
     return () => {

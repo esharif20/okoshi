@@ -41,16 +41,34 @@ export function elevation(o: ElevationOptions): THREE.CanvasTexture {
     g.fill();
   }
 
+  // Rain marks: faint streaks running down from under the beams.
+  for (let i = 0; i < 70; i++) {
+    const x = r() * c.width, len = u(0.3 + r() * 1.1);
+    const grad = g.createLinearGradient(0, u(0.24), 0, u(0.24) + len);
+    grad.addColorStop(0, `rgba(110,90,75,${0.05 + r() * 0.07})`);
+    grad.addColorStop(1, "rgba(110,90,75,0)");
+    g.fillStyle = grad;
+    g.fillRect(x, u(0.24), 2 + r() * 7, len);
+  }
+
   const timber = (x: number, top: number, w: number, h: number) => {
     g.fillStyle = TIMBER;
     g.fillRect(x, top, w, h);
     g.fillStyle = TIMBER_LIGHT;
     const along = w > h;
-    for (let i = 0; i < 5; i++) {
-      g.globalAlpha = 0.25 + r() * 0.3;
-      if (along) g.fillRect(x, top + r() * h, w, 1.5);
-      else g.fillRect(x + r() * w, top, 1.5, h);
+    for (let i = 0; i < 9; i++) {
+      g.globalAlpha = 0.2 + r() * 0.35;
+      if (along) g.fillRect(x, top + r() * h, w, 1.2);
+      else g.fillRect(x + r() * w, top, 1.2, h);
     }
+    // The worn top edge catches the light; the underside is in shade.
+    g.globalAlpha = 0.28;
+    g.fillStyle = "#a88a74";
+    if (along) g.fillRect(x, top, w, 2);
+    else g.fillRect(x, top, 2, h);
+    g.fillStyle = "#2c1f19";
+    if (along) g.fillRect(x, top + h - 2, w, 2);
+    else g.fillRect(x + w - 2, top, 2, h);
     g.globalAlpha = 1;
   };
 
@@ -77,12 +95,33 @@ export function elevation(o: ElevationOptions): THREE.CanvasTexture {
       timber(u(wx) - 5, y(wy + wh) - 5, u(ww) + 10, 8);
       timber(u(wx) - 5, y(wy) - 3, u(ww) + 10, 8);
     }
+    if (!o.screens?.includes(i)) {
+      // Boarded below: upright planks to waist height, as on a storehouse wall.
+      const top = Math.min(0.95, o.height * 0.34);
+      g.fillStyle = "#6f5546";
+      g.fillRect(u(x0), y(top), u(bay), u(top - 0.14));
+      for (let k = 0; k * 0.2 < bay; k++) {
+        g.fillStyle = k % 2 ? "rgba(255,235,215,0.07)" : "rgba(30,18,12,0.1)";
+        g.fillRect(u(x0 + k * 0.2), y(top), u(0.2) - 2, u(top - 0.14));
+        g.fillStyle = "#3a2a22";
+        g.fillRect(u(x0 + k * 0.2) - 1, y(top), 2, u(top - 0.14));
+      }
+      timber(u(x0), y(top) - u(0.06), u(bay), u(0.08));
+    }
   }
   // The frame: a post at every bay, the sill, the long rail, the head beam.
   for (let i = 0; i <= o.bays; i++) timber(u(i * bay) - u(0.09), 0, u(0.18), c.height);
   timber(0, y(0.14), c.width, u(0.14));
   timber(0, y(rail + 0.1), c.width, u(0.1));
   timber(0, 0, c.width, u(0.24));
+  // Peg heads where each post meets the rail and the beam.
+  g.fillStyle = "#2c1f19";
+  for (let i = 0; i <= o.bays; i++)
+    for (const at of [0.12, rail + 0.05, 0.07]) {
+      g.beginPath();
+      g.arc(u(i * bay), at === 0.12 ? u(0.12) : y(at), 5, 0, 7);
+      g.fill();
+    }
 
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;

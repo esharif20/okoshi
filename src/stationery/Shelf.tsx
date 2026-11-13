@@ -26,7 +26,7 @@ function Cover({ id, children }: { id?: string; children: ReactNode }) {
 function ProjectVolume({ project, index, active, onPick }: Picking & { project: Project; index: number }) {
   const figure = project.figures[0];
   return (
-    <li className="volume" data-kind="project" data-active={active} style={drop(index)}>
+    <li className="volume" data-kind="project" data-active={active} data-cursor="Open" style={drop(index)}>
       <Anchor className="spine" href={`/work/${project.slug}`} onPointerEnter={onPick} onFocus={onPick} data-in="spine">
         <span className="spine-title">{project.title}</span>
         <span className="spine-foot">{project.year}</span>

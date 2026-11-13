@@ -1,0 +1,31 @@
+.marquee {
+  overflow: hidden;
+  padding: clamp(1.25rem, 2.6vw, 2.25rem) 0;
+  background: var(--ink);
+  color: var(--bg);
+  transform: rotate(-1.2deg) scale(1.02);
+  margin-block: clamp(3rem, 7vw, 6rem);
+}
+.marquee-track { display: flex; width: max-content; will-change: transform; }
+.marquee ul { display: flex; margin: 0; padding: 0; list-style: none; }
+.marquee li {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font: 800 clamp(2rem, 4.6vw, 4.5rem) / 1 var(--font-display);
+  letter-spacing: -0.03em;
+}
+/* A red seal dot between words. */
+.marquee li::after {
+  content: "";
+  width: 0.26em;
+  height: 0.26em;
+  margin: 0 0.5em;
+  border-radius: 50%;
+  background: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { width: auto; }
+  .marquee ul { flex-wrap: wrap; row-gap: 0.4em; padding-inline: var(--margin); }
+  .marquee ul[aria-hidden] { display: none; }
+}
