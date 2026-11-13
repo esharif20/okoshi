@@ -1,5 +1,7 @@
 import { data } from "react-router";
-import { getProject } from "~/content";
+import { getProject, site } from "~/content";
+import { MangaPage } from "~/manga";
+import { SmoothScroll } from "~/motion";
 import type { Route } from "./+types/work";
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -8,16 +10,17 @@ export function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 export function meta({ params }: Route.MetaArgs) {
   const project = getProject(params.slug);
-  return [{ title: project ? project.title : "Not found" }];
+  if (!project) return [{ title: "Not found" }];
+  return [{ title: `${project.title}, by ${site.name}` }, { name: "description", content: project.summary }];
 }
 
 export default function Work({ params }: Route.ComponentProps) {
   const project = getProject(params.slug);
   if (!project) throw data("Not found", { status: 404 });
   return (
-    <main>
-      <h1>{project.title}</h1>
-      <p>{project.summary}</p>
-    </main>
+    <SmoothScroll>
+      {/* Keyed, so turning to another volume plays its entrance afresh. */}
+      <MangaPage key={project.slug} project={project} />
+    </SmoothScroll>
   );
 }

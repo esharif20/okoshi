@@ -53,3 +53,96 @@
   40% { transform: translateY(-0.4rem); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .loader-dots i { animation: none; opacity: 1; } }
+
+/* The Seal presses into the paper: it sinks, tightens and turns a little, as a stamp does under the hand. */
+.seal-button { border-radius: var(--radius); transition: transform var(--dur-quick) var(--ease-out), background-color var(--dur-quick) ease; }
+.seal-button:active { transform: translateY(2px) scale(0.96) rotate(-1deg); }
+.seal-button:focus-visible { outline-color: var(--ink); }
+
+/* Shapes cut with masks, so each takes whatever token colour it is given. */
+:root {
+  --dots: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Ccircle cx='2' cy='2' r='1.15'/%3E%3Ccircle cx='6' cy='6' r='1.15'/%3E%3C/svg%3E");
+  --dots-heavy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Ccircle cx='2' cy='2' r='1.9'/%3E%3Ccircle cx='6' cy='6' r='1.9'/%3E%3C/svg%3E");
+  --dots-holes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill-rule='evenodd' d='M0 0h8v8H0zM2 .4a1.6 1.6 0 100 3.2 1.6 1.6 0 000-3.2zM6 4.4a1.6 1.6 0 100 3.2 1.6 1.6 0 000-3.2z'/%3E%3C/svg%3E");
+  --brush: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M1 7.5C18 4 40 3.2 63 3.6c29 .5 55-1.7 84-1 20 .5 37 1.2 52 2.6-14 2.9-36 3.2-58 3.6-29 .6-52 2.4-80 2.3-22 0-42-.3-60-3.6z'/%3E%3C/svg%3E");
+  --scallop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 12'%3E%3Ccircle cx='12' cy='0' r='11'/%3E%3C/svg%3E");
+}
+
+/* Screentone: a flat colour seen through printed dots. The element must be empty. */
+.tone {
+  display: block;
+  background-color: var(--tone);
+  -webkit-mask: var(--dots) 0 0 / var(--tone-size, 8px) var(--tone-size, 8px);
+  mask: var(--dots) 0 0 / var(--tone-size, 8px) var(--tone-size, 8px);
+  pointer-events: none;
+}
+.tone[data-weight="heavy"] { -webkit-mask-image: var(--dots-heavy); mask-image: var(--dots-heavy); }
+
+/* A text link: a plain underline at rest, a brushed one drawn over it from the left. */
+.brush-link {
+  position: relative;
+  display: inline-block;
+  padding-block: 0.3em;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+.brush-link::after {
+  content: "";
+  position: absolute;
+  inset: auto -0.2em 0.02em;
+  height: 0.5em;
+  background: currentColor;
+  -webkit-mask: var(--brush) center / 100% 100% no-repeat;
+  mask: var(--brush) center / 100% 100% no-repeat;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 420ms var(--ease-out);
+}
+.brush-link:hover, .brush-link:focus-visible { text-decoration-color: transparent; }
+.brush-link:hover::after, .brush-link:focus-visible::after { clip-path: inset(0); }
+.brush-link:active { transform: translateY(1px); }
+
+.seal-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: var(--radius);
+  font: 800 1.5rem / 1 var(--font-display);
+  letter-spacing: -0.04em;
+  rotate: -6deg;
+}
+
+/* A photograph at rest: grey, seen through a screen of paper-coloured dots. */
+.toned { position: relative; display: block; overflow: hidden; background: var(--surface); }
+.toned img { display: block; width: 100%; height: 100%; object-fit: cover; }
+@media (hover: hover) {
+  .toned img { filter: grayscale(1) contrast(1.15); transition: filter var(--dur-move) var(--ease-out); }
+  .toned::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--bg);
+    -webkit-mask: var(--dots-holes) 0 0 / 6px 6px;
+    mask: var(--dots-holes) 0 0 / 6px 6px;
+    transition: opacity var(--dur-move) var(--ease-out), scale var(--dur-move) var(--ease-out);
+  }
+  .toned:hover img, :focus-visible > .toned img, .toned:focus-within img { filter: none; }
+  .toned:hover::after, :focus-visible > .toned::after, .toned:focus-within::after { opacity: 0; scale: 1.5; }
+}
+
+/* Lettering in the manner of manga sound effects. --ems is the width of the value, so any Figure fills its box. */
+.sfx-box { container-type: inline-size; }
+.sfx {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  white-space: nowrap;
+  font-size: min(calc(96cqw / var(--ems)), var(--sfx-max, 20rem));
+}

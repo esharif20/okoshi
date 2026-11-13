@@ -1,0 +1,6 @@
+/* The Screentone cut. Its ground is the field above it and its dots are the field below. */
+.tone-cut { display: block; width: 100%; }
+.tone-cut circle { fill: currentColor; }
+
+/* Heading lines rise out of a mask; the mask is given room for descenders. */
+.line-mask { padding-bottom: 0.14em; margin-bottom: -0.14em; }

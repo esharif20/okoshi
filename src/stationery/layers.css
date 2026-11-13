@@ -1,0 +1,74 @@
+/* The Layers: the words on the left, the tower on the right, each storey a little narrower than the one below. */
+.layers-sheet {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: end;
+}
+
+.layers-sheet h2 { grid-column: 1 / -1; margin-bottom: clamp(2rem, 4vw, 3.5rem); }
+.layers-text { grid-column: 1 / span 4; display: grid; gap: 2rem; align-content: space-between; align-self: stretch; }
+.layers-text > p { max-width: 34ch; font-size: var(--step-lead); line-height: 1.35; font-weight: 700; }
+
+.layers-plate { margin: 0; display: grid; gap: 0.6rem; width: min(100%, 21rem); }
+.layers-plate img { display: block; width: 100%; height: auto; }
+.layers-plate figcaption { font-size: var(--step-small); color: var(--muted); }
+
+.pagoda {
+  grid-column: 6 / -1;
+  align-self: end;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.storey { width: calc(100% - var(--step) * 8.5%); }
+.storey-roof {
+  display: block;
+  height: clamp(1.75rem, 2.6vw, 2.5rem);
+  background: var(--ink);
+  /* A tiled roof seen from the front: it slopes out to the eaves and the tips turn up. */
+  clip-path: polygon(11% 0, 89% 0, 97.2% 60%, 100% 42%, 99.2% 100%, 0.8% 100%, 0 42%, 2.8% 60%);
+}
+.storey-body {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  gap: 0.35rem var(--gutter);
+  align-items: baseline;
+  margin-inline: 7%;
+  padding: 1.1rem 1.4rem 1.3rem;
+  background: var(--surface);
+}
+.storey-body h3 { font-size: clamp(1.5rem, 1rem + 1.4vw, 2.125rem); }
+.storey-projects { grid-column: 2; display: flex; flex-wrap: wrap; gap: 0 1.5rem; }
+.storey-projects:empty { display: none; }
+
+.pagoda-spire {
+  width: 1.75rem;
+  height: 4.5rem;
+  background: var(--ink);
+  /* The finial: a mast with its rings. */
+  clip-path: polygon(42% 0, 58% 0, 60% 22%, 100% 24%, 100% 33%, 62% 35%, 63% 46%, 92% 48%, 92% 57%, 65% 59%, 68% 100%, 32% 100%, 35% 59%, 8% 57%, 8% 48%, 37% 46%, 38% 35%, 0 33%, 0 24%, 40% 22%);
+}
+
+@media (max-width: 899px) {
+  .layers-text, .pagoda { grid-column: 1 / -1; }
+  .layers-text { grid-template-columns: minmax(0, 1fr) minmax(0, 11rem); align-items: start; column-gap: var(--gutter); }
+  .pagoda { margin-top: 3rem; }
+}
+
+/* On a phone the tower stands flush left and steps in on the right only, like a stair. */
+@media (max-width: 699px) {
+  .layers-text { grid-template-columns: minmax(0, 1fr); }
+  .layers-plate { width: 100%; }
+  .layers-plate img { aspect-ratio: 4 / 3; object-fit: cover; object-position: 100% 62%; }
+  .pagoda { align-items: flex-start; }
+  .storey { width: calc(100% - var(--step) * 4%); }
+  .storey-roof { clip-path: polygon(0 0, 91% 0, 97.2% 60%, 100% 42%, 99.2% 100%, 0 100%); }
+  .storey-body { grid-template-columns: minmax(0, 1fr); margin-inline: 0 6%; padding: 0.9rem 1rem 1.1rem; }
+  .storey-projects { grid-column: 1; }
+  .pagoda-spire { margin-left: 44%; height: 3.25rem; }
+}

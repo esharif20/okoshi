@@ -1,0 +1,148 @@
+/* The Shelf. Spines stand on a board on the left; the Volume that is pulled out shows its cover on the right. */
+.shelf-sheet { --shelf-h: clamp(27.5rem, 62svh, 35rem); --board: 12px; padding-top: var(--gap-section); }
+
+.shelf-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem var(--gutter);
+  margin-bottom: clamp(2.5rem, 5vw, 4.5rem);
+}
+.shelf-head p { max-width: 30ch; font-size: var(--step-lead); line-height: 1.35; font-weight: 700; }
+
+.shelf {
+  position: relative;
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  /* The cover takes five of the twelve columns. */
+  --cover-w: calc((100% - var(--gutter)) * 5 / 12);
+  padding-right: calc(var(--cover-w) + var(--gutter));
+}
+
+.shelf-group { flex: var(--count) 1 0; min-width: 0; }
+.shelf-group ul {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: var(--shelf-h);
+  margin: 0;
+  /* Room above the tallest spine for a Volume to rise into. */
+  padding: 1.75rem 0 0;
+  list-style: none;
+  border-bottom: var(--board) solid var(--ink);
+}
+.shelf-group > p { margin-top: 0.75rem; font-weight: 700; }
+
+.volume { flex: 1 1 0; min-width: 0; height: calc(100% - var(--drop) * 1%); }
+
+.spine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 1.1rem 0 0.9rem;
+  writing-mode: vertical-rl;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: 700 var(--step-small) / 1.15 var(--font-text);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition: translate var(--dur-move) var(--ease-out);
+}
+.volume[data-kind="project"] .spine { background: var(--ink); color: var(--bg); }
+.spine-title {
+  font: 800 1.125rem / 1.15 var(--font-display);
+  letter-spacing: -0.02em;
+  max-height: calc(100% - 5.5rem);
+  overflow: hidden;
+}
+.volume[data-kind="project"] .spine-title { font-size: 1.375rem; }
+.spine-foot { display: inline-flex; align-items: center; gap: 0.6rem; font-variant-numeric: tabular-nums; }
+.spine-sign { width: 0.75rem; height: 0.75rem; fill: currentColor; }
+.spine-sign-bar { transition: opacity var(--dur-quick) ease; }
+.volume[data-open="true"] .spine-sign-bar { opacity: 0; }
+
+/* Pulled out: the Volume rises from the row. */
+.volume[data-active="true"] .spine, .spine:hover, .spine:focus-visible { translate: 0 -1.5rem; }
+.spine:active { translate: 0 -1.1rem; }
+.spine:focus-visible { outline-offset: 4px; }
+
+.cover {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--cover-w);
+  height: calc(var(--shelf-h) + var(--board));
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: clamp(1.5rem, 2.4vw, 2.25rem);
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--bg);
+  visibility: hidden;
+}
+/* The cover follows the pointer even if the script has not run: hover and focus outrank the chosen Volume. */
+.volume[data-active="true"] .cover { visibility: visible; z-index: 1; animation: cover-turn 520ms var(--ease-out); }
+.volume:hover .cover, .volume:focus-within .cover { visibility: visible; z-index: 2; }
+@keyframes cover-turn {
+  from { translate: -1.75rem 0; rotate: -2deg; opacity: 0; }
+}
+
+.cover-tone {
+  position: absolute;
+  inset: 0 0 auto auto;
+  width: 62%;
+  height: 58%;
+  background-color: var(--tone-on-ink);
+  clip-path: polygon(38% 0, 100% 0, 100% 100%);
+  --tone-size: 9px;
+}
+.cover > :not(.cover-tone) { position: relative; }
+.cover h3 { font-size: clamp(2rem, 3.4vw, 3.25rem); max-width: 11ch; text-wrap: balance; }
+.volume[data-kind="role"] .cover h3 { font-size: var(--step-lead); line-height: 1.15; max-width: 22ch; }
+.cover-line { max-width: 34ch; }
+.cover-org { font-weight: 700; }
+.cover-points { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; font-size: 1.0625rem; line-height: 1.45; }
+.cover-figure { margin-top: auto; display: grid; gap: 0.5rem; --sfx-max: 9.5rem; }
+.cover-figure .sfx { rotate: -3deg; transform-origin: left bottom; }
+.cover-figure span { max-width: 30ch; font-weight: 700; }
+.cover-foot { display: flex; justify-content: space-between; gap: 1rem; color: var(--muted-on-ink); font-weight: 700; }
+.volume[data-kind="role"] .cover-foot { margin-top: auto; }
+
+/* Between a phone and a desk: the row keeps its spines and the cover moves under the board. */
+@media (max-width: 1023px) {
+  .shelf { flex-wrap: wrap; padding-right: 0; padding-bottom: calc(22rem + 2.5rem); }
+  .cover { top: auto; bottom: 0; left: 0; width: auto; height: 22rem; }
+  .cover h3 { max-width: none; }
+  .cover-figure { --sfx-max: 6rem; }
+  .cover-figure .sfx { rotate: none; }
+}
+
+/* On a phone the Volumes lie flat in a pile, spines towards the reader. Roles open where they lie. */
+@media (max-width: 699px) {
+  .shelf { display: grid; gap: 2.5rem; padding-bottom: 0; }
+  .shelf-group ul { flex-direction: column; align-items: stretch; gap: 4px; height: auto; padding: 0; border-bottom-width: 10px; }
+  .volume { flex: none; height: auto; width: calc(100% - 1.75rem); margin-left: calc(var(--drop) * 0.09rem); }
+  .spine {
+    writing-mode: horizontal-tb;
+    min-height: 3.5rem;
+    height: auto;
+    padding: 0.7rem 1rem;
+    gap: 1rem;
+    transition-property: translate;
+  }
+  .spine-title { max-height: none; font-size: 1.125rem; }
+  .volume[data-kind="project"] .spine-title { font-size: 1.25rem; }
+  .volume[data-active="true"] .spine, .spine:hover, .spine:focus-visible { translate: 0.5rem 0; }
+  .spine:active { translate: 0.25rem 0; }
+
+  .cover { position: static; display: none; width: auto; height: auto; padding: 1.25rem 1rem 1.5rem; animation: none; }
+  .volume[data-open="true"] .cover { display: flex; visibility: visible; }
+  .cover-tone, .volume[data-kind="role"] .cover h3 { display: none; }
+}

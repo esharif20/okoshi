@@ -1,0 +1,22 @@
+/* The frame every sheet of Stationery shares: one pair of outer margins and one twelve-column grid. */
+.stationery { position: relative; }
+/* The sheets slide up over the Postcard, which waits underneath (the curtain footer; no script). */
+.sheets { position: relative; z-index: 1; background: var(--bg); }
+
+.sheet { padding-inline: var(--margin); }
+.sheet + .sheet { margin-top: var(--gap-section); }
+
+.grid12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+}
+
+.sheets h2, .postcard-ground h2 {
+  font-size: var(--step-head);
+  text-wrap: balance;
+}
+.sheets p, .sheets li { text-wrap: pretty; }
+
+/* The Screentone cut from the Letter's ground into the Figures' field. */
+.letter-to-figures { background: var(--surface); color: var(--ink); }

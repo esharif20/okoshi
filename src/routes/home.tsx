@@ -3,6 +3,7 @@ import { site } from "~/content";
 import { detectEdition } from "~/edition";
 import { SmoothScroll } from "~/motion";
 import { ArrivalHero } from "~/stationery/ArrivalHero";
+import { Sections } from "~/stationery/Sections";
 import { StillStory } from "~/strip/StillStory";
 import { Loader } from "~/ui/Loader";
 import { useStage } from "~/stage";
@@ -24,6 +25,7 @@ export default function Home() {
           <ArrivalHero />
           {edition !== "desktop" && <StillStory />}
         </section>
+        <Sections />
       </main>
     </SmoothScroll>
   );

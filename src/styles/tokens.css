@@ -7,6 +7,11 @@
   --accent: #c8202f;
   --accent-ink: #ffffff;
 
+  /* Tints mixed from the tokens above, so Night flips them with everything else. */
+  --tone: color-mix(in srgb, var(--ink) 34%, var(--bg)); /* Screentone dots on paper */
+  --tone-on-ink: color-mix(in srgb, var(--bg) 24%, var(--ink)); /* Screentone dots on an ink field */
+  --muted-on-ink: color-mix(in srgb, var(--bg) 76%, var(--ink)); /* secondary notes on an ink field */
+
   --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", Georgia, serif;
   --font-text: "Zen Kaku Gothic New", system-ui, sans-serif;
 
@@ -17,6 +22,8 @@
 
   --margin: clamp(1rem, 0.5rem + 2vw, 2rem);
   --gap-section: clamp(7.5rem, 5rem + 8vw, 15rem);
+  --gutter: clamp(0.75rem, 0.4rem + 1.1vw, 1.5rem);
+  --radius: 6px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);

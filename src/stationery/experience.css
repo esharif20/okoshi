@@ -1,0 +1,47 @@
+/* The Roles in full: a ledger of three columns, when, what and what was done. */
+.experience { margin-top: clamp(5rem, 9vw, 9rem); }
+.experience-head { font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem); margin-bottom: clamp(2rem, 4vw, 3.5rem); }
+.experience-head span { display: block; }
+
+.experience-list { display: grid; gap: clamp(3rem, 5vw, 4.5rem); margin: 0; padding: 0; list-style: none; }
+.experience-role {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: 1rem;
+  align-items: start;
+}
+.experience-when { grid-column: 1 / span 3; display: grid; gap: 0.25rem; }
+.experience-when strong { font: 800 var(--step-lead) / 1.15 var(--font-display); letter-spacing: -0.02em; }
+.experience-when span { color: var(--muted); font-weight: 700; }
+.experience-what { grid-column: 4 / span 4; display: grid; gap: 0.5rem; }
+.experience-what h4 {
+  margin: 0;
+  font: 800 var(--step-lead) / 1.15 var(--font-display);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.experience-org { font-weight: 700; }
+.experience-points { grid-column: 8 / -1; display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.experience-points li { padding-left: 1.4rem; position: relative; }
+.experience-points li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+@media (max-width: 899px) {
+  .experience-when { grid-column: 1 / -1; }
+  .experience-what { grid-column: 1 / span 6; }
+  .experience-points { grid-column: 7 / -1; }
+}
+@media (max-width: 699px) {
+  .experience-role { row-gap: 0.9rem; }
+  .experience-what, .experience-points { grid-column: 1 / -1; }
+  .experience-when { grid-auto-flow: column; justify-content: space-between; align-items: baseline; }
+}
