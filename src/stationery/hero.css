@@ -112,8 +112,31 @@
   .sheet-plan { margin-top: 32px; }
 }
 
-/* Light text in the top row would vanish over the paper once the Sheet moves, so it steps back as the scroll begins. */
-.hero-nav, .hero-id span {
-  opacity: calc(1 - var(--progress, 0) * 25);
-  transition: opacity var(--dur-quick) linear;
+/* The top row sits on the slate table at rest, on the moving Sheet during the Opening sequence, and on the painted
+   plain at the end. Light text would vanish over paper, so it steps back while the Sheet moves and returns in ink. */
+.hero-nav, .hero-id span, .hero-clock {
+  transition: opacity var(--dur-quick) linear, color var(--dur-quick) linear;
 }
+.hero[data-phase="moving"] :is(.hero-nav, .hero-id span, .hero-clock) { opacity: 0; pointer-events: none; }
+.hero[data-phase="plate"] { color: #1f3038; }
+:root[data-night="true"] .hero[data-phase="plate"] { color: #f7f9fa; }
+
+.hero-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+.hero-clock button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.hero-left { display: inline-flex; align-items: center; gap: 1.5rem; justify-self: start; }
+@media (max-width: 900px) { .hero-clock { display: none; } }

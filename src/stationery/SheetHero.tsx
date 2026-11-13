@@ -1,4 +1,5 @@
 import { site } from "~/content";
+import { Clock } from "~/ui/Clock";
 import { Portrait } from "~/ui/Portrait";
 import { SealButton } from "~/ui/SealButton";
 import { DioramaSlot } from "~/scene/DioramaSlot";
@@ -12,10 +13,12 @@ export function SheetHero() {
   return (
     <div className="hero" data-stage>
       <header className="hero-top">
-        <a className="hero-id" href="#about" aria-label={`About ${site.name}`}>
-          <Portrait name={site.name} />
-          <span>{site.city}</span>
-        </a>
+        <div className="hero-left">
+          <a className="hero-id" href="#about" aria-label={`About ${site.name}`}>
+            <Portrait name={site.name} />
+          </a>
+          <Clock className="hero-clock" />
+        </div>
         <nav className="hero-nav" aria-label="Sections">
           <a href="#work">Work</a>
           <a href="#about">About</a>
