@@ -1,5 +1,6 @@
 .hero {
-  position: relative;
+  position: sticky;
+  top: 0;
   height: 100svh;
   min-height: 560px;
   overflow: hidden;
@@ -83,10 +84,21 @@
 }
 
 .sheet-plan {
-  display: block;
   width: 100%;
   margin-top: 48px;
 }
+.sheet-plan svg { display: block; width: 100%; }
+
+.sheet { transform-origin: 0 0; will-change: transform; }
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#opening[data-edition="desktop"] { height: 600svh; }
 
 @media (max-width: 900px) {
   .hero { display: block; padding: 0 12px; }
@@ -98,4 +110,10 @@
   .sheet-name span:first-child, .sheet-name span:last-child { justify-self: center; }
   .sheet-line { margin-top: 24px; font-size: 1.25rem; }
   .sheet-plan { margin-top: 32px; }
+}
+
+/* Light text in the top row would vanish over the paper once the Sheet moves, so it steps back as the scroll begins. */
+.hero-nav, .hero-id span {
+  opacity: calc(1 - var(--progress, 0) * 25);
+  transition: opacity var(--dur-quick) linear;
 }

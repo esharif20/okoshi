@@ -1,16 +1,18 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useRef } from "react";
+import { useStage } from "~/stage";
 
 const Diorama = lazy(() => import("./Diorama"));
 
-// Loads the Diorama in the browser only, so prerendered pages never touch WebGL.
+// Loads the Diorama in the browser only, and only for the Desktop edition.
 export function DioramaSlot({ className }: { className?: string }) {
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+  const desktop = useStage((s) => s.edition === "desktop");
+  const ref = useRef<HTMLDivElement>(null);
+  const stageEl = ref.current?.closest<HTMLElement>("[data-stage]") ?? null;
   return (
-    <div className={className} aria-hidden="true">
-      {ready ? (
+    <div ref={ref} className={className} aria-hidden="true">
+      {desktop && stageEl ? (
         <Suspense fallback={null}>
-          <Diorama />
+          <Diorama stageEl={stageEl} />
         </Suspense>
       ) : null}
     </div>

@@ -26,7 +26,7 @@ export function HousePlan({ className }: { className?: string }) {
           {!r.open && <Tatami x={r.x} y={r.y} w={r.w} h={r.h} />}
           <text
             x={r.x + 0.28}
-            y={r.y + 0.62}
+            y={r.id === "garden" ? r.y + 3.1 : r.y + 0.62}
             fontSize={0.34}
             fontFamily="var(--font-text)"
             fontWeight={600}
@@ -36,11 +36,13 @@ export function HousePlan({ className }: { className?: string }) {
           </text>
         </g>
       ))}
-      {/* Garden: two pines, the net between them, a ball. */}
-      <circle cx={8.5} cy={1.6} r={0.55} fill="var(--ink)" />
-      <circle cx={8.5} cy={5.2} r={0.55} fill="var(--ink)" />
-      <line x1={8.5} y1={2.15} x2={8.5} y2={4.65} stroke="var(--ink)" strokeWidth={0.06} strokeDasharray="0.1 0.1" />
-      <circle cx={9.2} cy={6.7} r={0.2} fill="none" stroke="var(--ink)" strokeWidth={0.07} />
+      {/* Garden: the Pagoda's footing, two pines with the net between them, a ball. */}
+      <rect x={7.6} y={0.65} width={1.8} height={1.8} fill="var(--surface)" stroke="var(--ink)" strokeWidth={0.1} />
+      <rect x={8.05} y={1.1} width={0.9} height={0.9} fill="none" stroke="var(--ink)" strokeWidth={0.06} />
+      <circle cx={8.5} cy={3.9} r={0.42} fill="var(--ink)" />
+      <circle cx={8.5} cy={6.5} r={0.42} fill="var(--ink)" />
+      <line x1={8.5} y1={4.32} x2={8.5} y2={6.08} stroke="var(--ink)" strokeWidth={0.06} strokeDasharray="0.1 0.1" />
+      <circle cx={9.3} cy={7.3} r={0.2} fill="none" stroke="var(--ink)" strokeWidth={0.07} />
     </svg>
   );
 }

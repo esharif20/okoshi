@@ -1,6 +1,7 @@
 import { site } from "~/content";
 import { Portrait } from "~/ui/Portrait";
 import { SealButton } from "~/ui/SealButton";
+import { DioramaSlot } from "~/scene/DioramaSlot";
 import { HousePlan } from "./HousePlan";
 import "./hero.css";
 
@@ -9,7 +10,7 @@ export function SheetHero() {
   const [first, ...rest] = site.name.split(" ");
   const contact = site.email ? `mailto:${site.email}` : "#contact";
   return (
-    <div className="hero">
+    <div className="hero" data-stage>
       <header className="hero-top">
         <a className="hero-id" href="#about" aria-label={`About ${site.name}`}>
           <Portrait name={site.name} />
@@ -31,8 +32,11 @@ export function SheetHero() {
           <span>{rest.join(" ")}</span>
         </h1>
         <p className="sheet-line">{site.line}</p>
-        <HousePlan className="sheet-plan" />
+        <div className="sheet-plan" data-plan>
+          <HousePlan />
+        </div>
       </div>
+      <DioramaSlot className="hero-canvas" />
     </div>
   );
 }

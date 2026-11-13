@@ -17,8 +17,9 @@ export const initialStage: StageState = {
   hoveredRoom: null,
   openRoom: null,
   night: false,
-  edition: "desktop",
-  quality: "high",
+  // The prerendered page is the Still edition; detectEdition upgrades it in the browser.
+  edition: "still",
+  quality: "low",
 };
 
 // One store for the whole site. The page writes; the Diorama reads with stage.getState() in its render loop.
