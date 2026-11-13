@@ -109,6 +109,76 @@ describe("poseAt", () => {
   });
 });
 
+describe("poseAt on plans it was not written against", () => {
+  it("keeps a chain six deep in order", () => {
+    const chain: FoldPlan = { panels: ["a", "b", "c", "d", "e", "f"].map((id, i, all) => panel(id, i, all[i - 1])) };
+    for (const t of steps(1000)) {
+      const p = progressAt(chain, t);
+      for (let i = 1; i < 6; i++) expect(p.get(chain.panels[i].id)!).toBeLessThanOrEqual(p.get(chain.panels[i - 1].id)!);
+    }
+    expect(poseAt(chain, 1).get("f")).toBe(Math.PI / 2);
+  });
+
+  it("moves a child with its parent when both have the same order", () => {
+    const pair: FoldPlan = { panels: [panel("child", 1, "parent"), panel("parent", 1), panel("first", 0)] };
+    for (const t of steps(200)) {
+      const p = progressAt(pair, t);
+      expect(p.get("child")).toBe(p.get("parent"));
+    }
+  });
+
+  it("holds still a panel whose flat and raised angles are equal", () => {
+    const still: FoldPlan = { panels: [{ ...panel("s", 0), flat: 0.3, raised: 0.3 }, panel("after", 1, "s")] };
+    for (const t of steps(100)) expect(poseAt(still, t).get("s")).toBe(0.3);
+  });
+
+  // Seeded, so a failure names a plan that can be rebuilt. Parents are drawn
+  // from earlier panels and the list is then shuffled: acyclic, in any order.
+  it("keeps the rules on 60 random acyclic plans", () => {
+    let seed = 20261113;
+    const rand = () => {
+      seed = (seed + 0x6d2b79f5) | 0;
+      let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+    const pick = (n: number) => Math.floor(rand() * n);
+    for (let run = 0; run < 60; run++) {
+      const panels: PanelSpec[] = [];
+      const count = 1 + pick(12);
+      for (let i = 0; i < count; i++) {
+        const flat = (rand() - 0.5) * Math.PI;
+        panels.push({
+          ...panel(`p${i}`, pick(5), i > 0 && rand() < 0.7 ? `p${pick(i)}` : undefined),
+          flat,
+          raised: rand() < 0.15 ? flat : (rand() - 0.5) * Math.PI,
+        });
+      }
+      for (let i = panels.length - 1; i > 0; i--) {
+        const j = pick(i + 1);
+        [panels[i], panels[j]] = [panels[j], panels[i]];
+      }
+      const random: FoldPlan = { panels };
+      const label = `run ${run}`;
+      const at0 = poseAt(random, 0);
+      const at1 = poseAt(random, 1);
+      for (const p of panels) {
+        expect(at0.get(p.id), label).toBe(p.flat);
+        expect(at1.get(p.id), label).toBe(p.raised);
+      }
+      let before = progressAt(random, 0);
+      for (const t of steps(1000)) {
+        const now = progressAt(random, t);
+        for (const p of panels) {
+          if (p.parent) expect(now.get(p.id)!, label).toBeLessThanOrEqual(now.get(p.parent)!);
+          expect(now.get(p.id)!, label).toBeGreaterThanOrEqual(before.get(p.id)!);
+        }
+        before = now;
+      }
+    }
+  });
+});
+
 describe("validatePlan", () => {
   it("accepts a sound plan", () => {
     expect(() => validatePlan(plan)).not.toThrow();
@@ -131,6 +201,14 @@ describe("validatePlan", () => {
   it("rejects a zero hinge axis", () => {
     const p = { ...panel("z", 0), hinge: { origin: [0, 0, 0] as [number, number, number], axis: [0, 0, 0] as [number, number, number] } };
     expect(() => validatePlan({ panels: [p] })).toThrow(/"z" has a zero hinge axis/);
+  });
+
+  it("rejects a hinge that is not finite", () => {
+    const at = (origin: number[], axis: number[]) => ({ panels: [{ ...panel("h", 0), hinge: { origin, axis } as PanelSpec["hinge"] }] });
+    expect(() => validatePlan(at([0, 0, 0], [Number.NaN, 0, 0]))).toThrow(/"h" has a non-finite hinge/);
+    expect(() => validatePlan(at([0, 0, 0], [Infinity, 1, 0]))).toThrow(/"h" has a non-finite hinge/);
+    expect(() => validatePlan(at([0, Number.NaN, 0], [1, 0, 0]))).toThrow(/"h" has a non-finite hinge/);
+    expect(() => validatePlan(at([0, 0, -Infinity], [1, 0, 0]))).toThrow(/"h" has a non-finite hinge/);
   });
 
   it("is enforced by poseAt", () => {

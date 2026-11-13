@@ -29,6 +29,8 @@ export function validatePlan(plan: FoldPlan): void {
     if (!Number.isFinite(p.order) || p.order < 0) throw new Error(`Fold plan: panel "${p.id}" has a bad order`);
     if (!Number.isFinite(p.flat) || !Number.isFinite(p.raised))
       throw new Error(`Fold plan: panel "${p.id}" has a non-finite angle`);
+    if (![...p.hinge.origin, ...p.hinge.axis].every(Number.isFinite))
+      throw new Error(`Fold plan: panel "${p.id}" has a non-finite hinge`);
     if (Math.hypot(...p.hinge.axis) === 0) throw new Error(`Fold plan: panel "${p.id}" has a zero hinge axis`);
   }
   for (const p of plan.panels) {
@@ -47,8 +49,9 @@ export function hingeAxis(panel: PanelSpec): Vec3 {
   return [x / n, y / n, z / n];
 }
 
-// Keyed by plan identity: plans are static data, so a plan is checked and
-// scheduled once, not on every frame.
+// Keyed by plan identity, so a plan is checked and scheduled once, not on
+// every frame. A plan must therefore not be changed in place after its first
+// poseAt: build a new FoldPlan object instead (freezing plans is a good guard).
 const schedules = new WeakMap<FoldPlan, Slot[]>();
 
 // Waves are ranked by distinct order. Each takes a slice of length 2/(W+1) and
@@ -98,7 +101,7 @@ export function progressAt(plan: FoldPlan, t: number): Map<string, number> {
   return out;
 }
 
-/** Hinge angle in radians of every panel at t; t is clamped to 0..1. */
+/** Hinge angle in radians of every panel at t; t is clamped to 0..1. Treat the plan as frozen once passed in. */
 export function poseAt(plan: FoldPlan, t: number): Map<string, number> {
   const progress = progressAt(plan, t);
   const angles = new Map<string, number>();
