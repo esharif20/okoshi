@@ -3,8 +3,8 @@ import * as THREE from "three";
 // The paper every panel is made of. One shader, three states laid over each other:
 // bare folded paper, then Ink (line work and screentone), then Paint (colour soaking up from the ground).
 
-export type PaperLook = "plaster" | "screen" | "eave";
-const LOOK_INDEX: Record<PaperLook, number> = { plaster: 0, screen: 1, eave: 2 };
+export type PaperLook = "plaster" | "screen" | "eave" | "floor" | "boards";
+const LOOK_INDEX: Record<PaperLook, number> = { plaster: 0, screen: 1, eave: 2, floor: 3, boards: 4 };
 
 const linear = (hex: string) => new THREE.Color(hex);
 
@@ -14,17 +14,20 @@ export const paperState = {
   uPaint: { value: 0 },
   uShown: { value: 1 },
   uDotScale: { value: 5 },
+  uNight: { value: 0 },
+  uGlow: { value: linear("#ffd9a3") }, // lamplight through paper screens at Night
   uPaper: { value: linear("#f7f9fa") },
   uInkColour: { value: linear("#1f3038") },
   uWash: { value: linear("#dfe6ea") }, // the cool shadow of a painted white wall
-  uPaintColours: { value: [linear("#f7f9fa"), linear("#eef2f3"), linear("#3a5462")] }, // plaster, screen, eave
+  // plaster, screen, eave, floor (tatami), boards (veranda)
+  uPaintColours: { value: [linear("#f7f9fa"), linear("#eef2f3"), linear("#3a5462"), linear("#dfe5d6"), linear("#cfc9bd")] },
 };
 
 const DECLARATIONS = /* glsl */ `
-uniform float uInk, uPaint, uLift, uLook, uDotScale;
+uniform float uInk, uPaint, uLift, uLook, uDotScale, uNight, uShown;
 uniform vec2 uSize;
-uniform vec3 uPaper, uInkColour, uWash;
-uniform vec3 uPaintColours[3];
+uniform vec3 uPaper, uInkColour, uWash, uGlow;
+uniform vec3 uPaintColours[5];
 varying vec2 vPaperUv;
 varying vec3 vPaperWorld;
 
@@ -47,10 +50,13 @@ float pBand(float y, float y0, float w) {
 }
 
 // The drawing on a panel, in plan units: timber frame, sliding screens or roof tiles.
-float pDrawing(vec2 p, vec2 size, float look) {
+// The cut edge of the paper, which shows from the first moment a flap exists.
+float pEdge(vec2 p, vec2 size) {
   vec2 e = min(p, size - p);
   float aa = fwidth(p.x) + fwidth(p.y);
-  float border = 1.0 - smoothstep(0.03, 0.03 + aa, min(e.x, e.y));
+  return 1.0 - smoothstep(0.03, 0.03 + aa, min(e.x, e.y));
+}
+float pDrawing(vec2 p, vec2 size, float look) {
   float ink = 0.0;
   if (look < 0.5) {
     float bays = max(1.0, floor(size.x / 0.95 + 0.5));
@@ -62,24 +68,33 @@ float pDrawing(vec2 p, vec2 size, float look) {
     ink = pLine(p.x / bay, 0.06 / bay);
     ink = max(ink, pLine(p.x / (bay / 3.0), 0.02 / (bay / 3.0)));
     ink = max(ink, pLine(p.y / 0.22, 0.02 / 0.22) * step(0.12, p.y));
-  } else {
+  } else if (look < 2.5) {
     ink = pLine(p.x / 0.17, 0.035 / 0.17);
     ink = max(ink, pLine(p.y / 0.3, 0.03 / 0.3));
+  } else if (look < 3.5) {
+    // Tatami: mats 0.9 by 1.8, every other column shifted by half a mat.
+    float col = floor(p.x / 0.9);
+    ink = pLine(p.x / 0.9, 0.03 / 0.9);
+    ink = max(ink, pLine((p.y + mod(col, 2.0) * 0.9) / 1.8, 0.03 / 1.8));
+  } else {
+    ink = pLine(p.y / 0.24, 0.025 / 0.24);
   }
-  return max(ink, border);
+  return ink;
 }
 `;
 
 const COMPOSE = /* glsl */ `
 {
   vec2 p = vPaperUv * uSize;
+  // The flaps print onto the Sheet grain by grain as the scroll begins: no blending, so overlapping flaps never sort wrongly.
+  if (uShown < 1.0 && pNoise(p * 22.0) * 0.6 + pHash(floor(p * 60.0)) * 0.4 > uShown) discard;
   float light = dot(outgoingLight, vec3(0.3333));
-  float lit = smoothstep(0.58, 0.9, light);
+  float lit = smoothstep(0.5, 0.66, light);
 
   // Ink draws across each panel behind a ragged front.
   float front = (p.x / max(uSize.x, 0.001)) * 0.75 + pNoise(p * 2.3) * 0.25;
   float inked = smoothstep(front, front + 0.06, uInk * 1.12);
-  float drawing = pDrawing(p, uSize, uLook) * inked;
+  float drawing = max(pDrawing(p, uSize, uLook) * inked, pEdge(p, uSize));
 
   // Shade is plain grey on bare paper and turns to screentone dots as the Ink arrives.
   float inkAll = smoothstep(0.0, 0.25, uInk);
@@ -90,19 +105,25 @@ const COMPOSE = /* glsl */ `
   vec3 inkStage = mix(mix(bare, toned, inkAll), uInkColour, drawing);
 
   // Paint soaks up from the ground with an uneven wet edge. A Lifted room gives its paint back.
-  float reach = uPaint * 6.4 - vPaperWorld.y + (pNoise(vPaperWorld.xz * 1.3 + vPaperWorld.y * 0.7) - 0.5) * 1.1;
+  float reach = uPaint * 7.2 - 0.62 - vPaperWorld.y + (pNoise(vPaperWorld.xz * 1.3 + vPaperWorld.y * 0.7) - 0.5) * 1.1;
   float painted = smoothstep(0.0, 0.3, reach) * (1.0 - uLift);
   float wetEdge = painted * (1.0 - smoothstep(0.0, 0.55, reach));
   vec3 colour = uPaintColours[int(uLook + 0.5)];
   vec3 wash = mix(mix(colour * uWash / uPaper, colour, lit), colour * 0.82, wetEdge * 0.6);
   vec3 paintStage = mix(wash, uInkColour, drawing * 0.9);
 
+  // Night: everything sinks towards the ink colour; paper screens glow from the lamps inside.
+  vec3 night = mix(paintStage * vec3(0.3, 0.38, 0.46), uGlow, step(0.5, uLook) * step(uLook, 1.5) * (1.0 - drawing) * 0.92);
+  paintStage = mix(paintStage, night, uNight);
+
   outgoingLight = mix(inkStage, paintStage, painted);
+  // Floors lie on the printed plan, so they only exist once painted.
+  if (uLook > 2.5) diffuseColor.a *= painted;
 }
 `;
 
 export function makePaper(look: PaperLook, size: [number, number]): THREE.MeshLambertMaterial {
-  const material = new THREE.MeshLambertMaterial({ color: "#ffffff", side: THREE.DoubleSide });
+  const material = new THREE.MeshLambertMaterial({ color: "#ffffff", side: THREE.DoubleSide, transparent: look === "floor" || look === "boards" });
   const own = { uSize: { value: new THREE.Vector2(...size) }, uLook: { value: LOOK_INDEX[look] }, uLift: { value: 0 } };
   material.userData.paper = own;
   material.onBeforeCompile = (shader) => {
