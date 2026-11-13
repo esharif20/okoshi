@@ -97,7 +97,7 @@ export function groundHeight(x: number, z: number): number {
   return lift * rolling + back * site + swell;
 }
 
-const GROUND = { width: 760, depth: 300, centreZ: 62, cols: 300, rows: 130 };
+const GROUND = { width: 900, depth: 350, centreZ: 38, cols: 320, rows: 150 };
 
 function ground(): THREE.BufferGeometry {
   const g = new THREE.PlaneGeometry(GROUND.width, GROUND.depth, GROUND.cols, GROUND.rows);
@@ -105,7 +105,7 @@ function ground(): THREE.BufferGeometry {
   g.translate(0, 0, GROUND.centreZ);
   const pos = g.attributes.position as THREE.BufferAttribute;
   const colour = new Float32Array(pos.count * 3);
-  const sward = linear("#a8b287"), scrub = linear("#95a179"), dry = linear("#cdc59a"), soil = linear("#dcc4a8"), gravel = linear("#e6dccd"), c = new THREE.Color();
+  const sward = linear("#b2bb93"), scrub = linear("#9faa84"), dry = linear("#d5cca6"), soil = linear("#dcc4a8"), gravel = linear("#e6dccd"), c = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
     const h = groundHeight(x, z);
@@ -124,7 +124,7 @@ function ground(): THREE.BufferGeometry {
 
 // -------------------------------------------------------------------------------------------- grass
 
-const BLADES = 96000;
+const BLADES = 170000;
 
 /** A field of blades: one ribbon, instanced, shaped and coloured in the vertex shader. */
 function grass(): THREE.InstancedMesh {
@@ -152,7 +152,7 @@ function grass(): THREE.InstancedMesh {
       .replace(
         "#include <begin_vertex>",
         /* glsl */ `
-        float bWide = 0.05 * (1.0 - bT * 0.9);
+        float bWide = 0.034 * (1.0 - bT * 0.9);
         vec3 transformed = vec3(position.x * bWide * bCos, bT * aBlade.x, position.x * bWide * bSin);
         float bBend = aBlade.z * pow(bT, 1.6) * aBlade.x;
         transformed.xz += vec2(bSin, -bCos) * bBend;
@@ -187,7 +187,7 @@ function grass(): THREE.InstancedMesh {
     if (rand() > 0.35 + clump) continue;
     m.setPosition(x, groundHeight(x, z), z);
     mesh.setMatrixAt(n, m);
-    params.set([0.22 + rand() * 0.3 + clump * 0.18, rand() * Math.PI * 2, 0.25 + rand() * 0.55, rand()], n * 4);
+    params.set([0.11 + rand() * 0.2 + clump * 0.14, rand() * Math.PI * 2, 0.25 + rand() * 0.55, rand()], n * 4);
     n++;
   }
   blade.setAttribute("aBlade", new THREE.InstancedBufferAttribute(params, 4));
@@ -197,26 +197,33 @@ function grass(): THREE.InstancedMesh {
   return mesh;
 }
 
-/** Field stones, half sunk. */
+/** Field stones: small, smooth and pale, half sunk in the grass. */
 function stones(count: number): THREE.InstancedMesh {
-  const geometry = new THREE.IcosahedronGeometry(1, 1);
-  const mesh = new THREE.InstancedMesh(geometry, new THREE.MeshLambertMaterial({ color: "#d9cdbf", flatShading: true }), count);
+  const geometry = new THREE.SphereGeometry(1, 12, 8);
+  const mesh = new THREE.InstancedMesh(geometry, new THREE.MeshLambertMaterial({ color: "#e2d6c4" }), count);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
   let seed = 31;
   const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   for (let i = 0; i < count; i++) {
     const z = -40 + rand() * 185;
-    const x = pathX(Math.max(z, 9)) + (rand() - 0.5) * 120;
-    const s = 0.12 + Math.pow(rand(), 3) * 0.6;
-    const onSite = onSheet(x, z, 1) > 0.02;
-    q.setFromEuler(e.set(rand(), rand() * 6, rand()));
-    m.compose(new THREE.Vector3(x, groundHeight(x, z) + s * 0.12, z), q, new THREE.Vector3(s * 1.5, onSite ? 0 : s * 0.7, s * 1.2));
+    const x = pathX(Math.max(z, 9)) + (rand() - 0.5) * 110;
+    const s = 0.07 + Math.pow(rand(), 4) * 0.34;
+    const hidden = onSheet(x, z, 1) > 0.02 || Math.abs(x - pathX(z)) < 1.2;
+    q.setFromEuler(e.set(0, rand() * 6, 0));
+    m.compose(new THREE.Vector3(x, groundHeight(x, z) + s * 0.1, z), q, new THREE.Vector3(s * 1.6, hidden ? 0 : s * 0.55, s * 1.2));
     mesh.setMatrixAt(i, m);
   }
   mesh.instanceMatrix.needsUpdate = true;
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   return mesh;
+}
+
+/** The point in the picture's frame that a world position stands over. */
+export function toFrame(x: number, z: number): [number, number] {
+  const c = Math.cos(VIEW_AZIMUTH), s = Math.sin(VIEW_AZIMUTH);
+  const dx = x - SITE[0], dz = z - SITE[2];
+  return [dx * c - dz * s, dx * s + dz * c];
 }
 
 // ---------------------------------------------------------------------------------------------- sky
@@ -232,7 +239,7 @@ function skyMaterial() {
       uMid: { value: linear("#f3d6cb") },
       uHorizon: { value: linear("#f9e8d6") },
       uSun: { value: linear("#fffaf2") },
-      uSunDir: { value: new THREE.Vector3(-0.3, 0.1, -0.95).normalize() },
+      uSunDir: { value: new THREE.Vector3(-0.33, 0.1, -0.944).normalize() },
       uNightZenith: { value: linear("#141f29") },
       uNightHorizon: { value: linear("#3a4759") },
     },
@@ -266,81 +273,52 @@ function skyMaterial() {
 
 // ------------------------------------------------------------------------------------------- ranges
 
-type Range = { z: number; width: number; height: number; seed: number; crest: string; body: string; snow: number; freq: number };
+type Range = { z: number; width: number; depth: number; height: number; seed: number; rock: string; haze: string; snow: number; fade: number };
 
-// Farthest first, so nearer washes are laid over farther ones.
+// Real ground, raised into ranges and lit by the same sun as everything else, so each has a lit side and a
+// shaded side. Distance is painted in: the farther a range, the paler and pinker it is.
 const RANGES: Range[] = [
-  { z: -262, width: 1300, height: 46, seed: 7.7, crest: "#c9a3b0", body: "#ead2cc", snow: 1, freq: 0.0058 },
-  { z: -205, width: 1100, height: 33, seed: 4.1, crest: "#b48d9f", body: "#d9bcba", snow: 0.4, freq: 0.0082 },
-  { z: -150, width: 900, height: 22, seed: 2.6, crest: "#977a8f", body: "#c2a4a9", snow: 0, freq: 0.0115 },
+  { z: -330, width: 1700, depth: 150, height: 50, seed: 7.7, rock: "#c39dac", haze: "#f3ddd6", snow: 1, fade: 0.45 },
+  { z: -240, width: 1300, depth: 110, height: 31, seed: 4.1, rock: "#a98699", haze: "#efd5d0", snow: 0.5, fade: 0.26 },
+  { z: -170, width: 1000, depth: 80, height: 17, seed: 2.6, rock: "#8f768b", haze: "#e6c9c8", snow: 0, fade: 0.1 },
 ];
 
-function rangeMaterial(r: Range) {
-  return new THREE.ShaderMaterial({
-    transparent: true,
-    depthWrite: false,
-    fog: false,
-    uniforms: {
-      ...landState,
-      uSeed: { value: r.seed },
-      uHeight: { value: r.height },
-      uWidth: { value: r.width },
-      uFreq: { value: r.freq },
-      uSnow: { value: r.snow },
-      uCrest: { value: linear(r.crest) },
-      uBody: { value: linear(r.body) },
-      uMist: { value: linear(MIST) },
-      uNightMist: { value: linear("#33414f") },
-    },
-    vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-    fragmentShader: /* glsl */ `
-      uniform float uSeed, uHeight, uWidth, uFreq, uSnow, uNight; uniform vec3 uCrest, uBody, uMist, uNightMist; varying vec2 vUv;
-      ${NOISE}
-      // The skyline: folded noise gives sharp crests and scooped saddles; raising it to a power makes peaks stand clear.
-      float skyline(float x) {
-        float a = 0.5, f = 1.0, s = 0.0, total = 0.0;
-        for (int i = 0; i < 6; i++) {
-          s += a * (1.0 - abs(lNoise(vec2(x * f, uSeed * 13.7 + float(i) * 3.1)) * 2.0 - 1.0));
-          total += a; f *= 2.07; a *= 0.5;
-        }
-        float massif = 0.55 + 0.45 * lNoise(vec2(x * 0.22, uSeed));
-        return uHeight * (0.16 + 0.84 * pow(s / total, 1.7) * massif * 1.25);
-      }
-      void main() {
-        float u = (vUv.x - 0.5) * uWidth;
-        float y = vUv.y * uHeight * 1.18;
-        float crest = skyline(u * uFreq);
-        float aa = fwidth(y) * 1.3;
-        float alpha = 1.0 - smoothstep(crest - aa, crest + aa, y);
-        if (alpha < 0.002) discard;
-
-        float below = crest - y;
-        float depth = below / uHeight; // 0 on the skyline
-        // Faces: sample the skyline a little to one side, further over the lower down the slope we are,
-        // so that lit and shaded faces fan out from each peak instead of dropping straight down.
-        float lean = below * 0.55;
-        float span = 5.0 + below * 0.25;
-        float left = skyline((u - lean - span) * uFreq), right = skyline((u - lean + span) * uFreq);
-        float slope = (right - left) / (2.0 * span);
-        float rough = lFbm(vec2(u * 0.05, y * 0.11 + uSeed)) - 0.5;
-        float lit = smoothstep(-0.18, 0.18, -slope + rough * 0.3); // light from the left: faces that fall to the right are lit
-        vec3 col = mix(uCrest, uBody, lit * 0.85 + 0.05);
-        // Granulation, as pigment settles in the grain of the paper.
-        col *= 0.96 + 0.08 * lFbm(vec2(u * 0.04, y * 0.1));
-        // Snow lies on the highest crests and runs down the lit faces.
-        float high = smoothstep(0.5, 0.75, crest / uHeight);
-        float snow = uSnow * high * (1.0 - smoothstep(0.02, 0.12 + 0.14 * (rough + 0.5), depth));
-        col = mix(col, vec3(1.0, 0.985, 0.97), snow * mix(0.35, 0.95, lit));
-        // The skyline carries a darker edge, like the key block of a print.
-        col = mix(col, uCrest * 0.86, (1.0 - smoothstep(0.0, 0.016, depth)) * 0.5);
-        // Every range thins into mist towards its foot.
-        float foot = pow(1.0 - smoothstep(0.0, uHeight * 0.42, y), 1.5);
-        col = mix(col, uMist, foot);
-        col = mix(col, mix(col * vec3(0.22, 0.3, 0.4), uNightMist, foot * 0.8), uNight);
-        gl_FragColor = vec4(col, alpha);
-        #include <colorspace_fragment>
-      }`,
-  });
+function mountains(r: Range): THREE.BufferGeometry {
+  const cols = 520, rows = 64;
+  const g = new THREE.PlaneGeometry(r.width, r.depth, cols, rows);
+  g.rotateX(-Math.PI / 2);
+  const pos = g.attributes.position as THREE.BufferAttribute;
+  const colour = new Float32Array(pos.count * 3);
+  const rock = linear(r.rock), haze = linear(r.haze), white = linear("#fffaf6"), c = new THREE.Color();
+  const F = 2.3 / r.depth;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    // Folded noise, with detail gathering on the crests: sharp ridges, scooped valleys, spurs running down.
+    let a = 0.5, f = 1, sum = 0, w = 1;
+    for (let o = 0; o < 6; o++) {
+      let n = 1 - Math.abs(noise(x * F * f + r.seed * 13.7, z * F * f * 1.35 + o * 3.1) * 2 - 1);
+      n *= n;
+      sum += a * n * w;
+      w = Math.min(1, n * 1.6);
+      f *= 2.03;
+      a *= 0.5;
+    }
+    // Separate peaks along the range, each a pointed mass, so the skyline rises and falls instead of running level.
+    const massif = Math.pow(noise(x * F * 0.33 + r.seed, r.seed * 2.3), 1.6) * 1.9;
+    const across = (z + r.depth / 2) / r.depth; // 0 at the back, 1 at the front edge, where it meets the plain
+    const bell = Math.pow(Math.sin(Math.PI * Math.min(1, across * 1.04)), 1.5);
+    const h = r.height * bell * Math.min(1.15, 0.1 + Math.pow(sum, 1.25) * 1.5 * (0.25 + massif));
+    pos.setY(i, h);
+    const t = h / r.height;
+    c.copy(haze).lerp(rock, smooth(0.06, 0.4, t));
+    c.multiplyScalar(0.96 + 0.08 * noise(x * 0.05, z * 0.05));
+    if (r.snow) c.lerp(white, r.snow * smooth(0.5, 0.74, t + (noise(x * F * 6, z * F * 6) - 0.5) * 0.16));
+    c.lerp(haze, r.fade);
+    colour.set([c.r, c.g, c.b], i * 3);
+  }
+  g.setAttribute("color", new THREE.BufferAttribute(colour, 3));
+  g.computeVertexNormals();
+  return g;
 }
 
 // ---------------------------------------------------------------------------------------------- land
@@ -348,17 +326,19 @@ function rangeMaterial(r: Range) {
 export function Land() {
   const { scene } = useThree();
   const sky = useMemo(skyMaterial, []);
-  const ranges = useMemo(() => RANGES.map((r) => ({ ...r, material: rangeMaterial(r) })), []);
+  const ranges = useMemo(() => RANGES.map((r) => ({ ...r, geometry: mountains(r) })), []);
+  // No fog on the ranges: at this distance it would erase them. Their haze is painted into their colours.
+  const rangeMaterial = useMemo(() => new THREE.MeshLambertMaterial({ vertexColors: true, fog: false }), []);
   const earth = useMemo(ground, []);
   const earthMaterial = useMemo(() => new THREE.MeshLambertMaterial({ vertexColors: true }), []);
   const field = useMemo(grass, []);
-  const rocks = useMemo(() => stones(900), []);
+  const rocks = useMemo(() => stones(520), []);
   const fogDay = useMemo(() => linear(MIST), []);
   const fogNight = useMemo(() => linear("#2f3d4b"), []);
 
   useEffect(() => {
     // Distance takes colour away: the far ground and the buildings sink a little into the mist.
-    scene.fog = new THREE.Fog(MIST, 70, 330);
+    scene.fog = new THREE.Fog(MIST, 55, 300);
     return () => {
       scene.fog = null;
     };
@@ -380,10 +360,8 @@ export function Land() {
       </mesh>
       {/* Everything below is squared to the composed view, so the ranges run level across the picture. */}
       <group position={SITE} rotation={[0, VIEW_AZIMUTH, 0]}>
-        {ranges.map((r, i) => (
-          <mesh key={r.z} material={r.material} position={[0, (r.height * 1.18) / 2 + 2, r.z]} renderOrder={-8 + i}>
-            <planeGeometry args={[r.width, r.height * 1.18]} />
-          </mesh>
+        {ranges.map((r) => (
+          <mesh key={r.z} geometry={r.geometry} material={rangeMaterial} position={[0, 0.5, r.z]} />
         ))}
         <mesh geometry={earth} material={earthMaterial} receiveShadow />
         <primitive object={field} />

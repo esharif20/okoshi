@@ -3,6 +3,7 @@ import { DioramaSlot } from "~/scene/DioramaSlot";
 import { Clock } from "~/ui/Clock";
 import { Portrait } from "~/ui/Portrait";
 import { SealButton } from "~/ui/SealButton";
+import { RoomLabels } from "./RoomLabels";
 import "./hero.css";
 
 // The first screen: the painted landscape fills it, with the name set in the sky.
@@ -27,6 +28,8 @@ export function ArrivalHero() {
         </nav>
         <SealButton href={contact}>Get in touch</SealButton>
       </header>
+
+      <RoomLabels />
 
       <div className="hero-title">
         <h1>{site.name}</h1>

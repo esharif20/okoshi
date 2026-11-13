@@ -62,13 +62,13 @@
   z-index: 1;
   left: var(--margin);
   right: var(--margin);
-  top: clamp(7.5rem, 17svh, 12rem);
+  top: clamp(6.5rem, 13svh, 10rem);
   transform: translateY(calc(var(--progress, 0) * -46svh));
   opacity: calc(1 - var(--progress, 0) * 9);
   pointer-events: none;
 }
 .hero-title h1 {
-  font-size: clamp(3.75rem, 11.2vw, 12.5rem);
+  font-size: clamp(3.5rem, 9.4vw, 10.5rem);
   line-height: 0.95;
   white-space: nowrap;
 }
