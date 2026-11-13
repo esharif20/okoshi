@@ -61,15 +61,22 @@ const COMPOSE = /* glsl */ `
   // Before the ink, the drawing is there in faint pencil.
   vec3 drawing = mix(paper, uInkColour, max(drawn * mix(0.14, 0.9, inked), dots * 0.5));
 
-  // Paint arrives the way a watercolour is laid: brush-loads land in patches and spread until they meet,
-  // a first thin wash, then the full colour, with a darker line where a wet edge dried.
-  float reach = uPaint * 1.95 - 0.26 - climb * 0.5 - bloom * 0.8 + (fray - 0.5) * 0.14;
+  // Paint is laid on with a wide brush: long strokes sweep across the building one after another, each
+  // starting a little later than the last, with a dry, streaked leading edge where the bristles run out.
+  vec2 across = vec2(dot(vPaintWorld.xz, vec2(0.92, 0.39)), vPaintWorld.y);  // along the wall, and up it
+  float lane = (across.y + sin(across.x * 0.5) * 0.25) / 1.15;               // each stroke is about a metre tall
+  float stroke = floor(lane);
+  float order = pHash(vec2(stroke, 3.7));                                    // which stroke is laid when
+  float dirn = mod(stroke, 2.0) < 1.0 ? 1.0 : -1.0;                          // the brush goes out, then back
+  float along = (across.x * dirn + 30.0) / 60.0;
+  float bristle = pNoise(vec2(across.x * 0.7, lane * 26.0));
+  float reach = (uPaint * 2.3 - order * 0.9 - along * 0.55 - 0.05) + (bristle - 0.5) * 0.16 - (0.5 - abs(fract(lane) - 0.5)) * -0.06;
   // Pointing at a room draws its paint back to the ink underneath, with the same ragged edge.
   float lifted = uLift * (1.0 - smoothstep(uLiftRadius * 0.72, uLiftRadius, distance(vPaintWorld, uLiftAt) + (fray - 0.5) * 0.9));
   reach = mix(reach, -0.2, lifted);
-  float wash = smoothstep(0.0, 0.2, reach);
-  float full = smoothstep(0.12, 0.8, reach);
-  float wet = wash * (1.0 - smoothstep(0.0, 0.3, reach));
+  float wash = smoothstep(0.0, 0.05, reach);
+  float full = smoothstep(0.03, 0.42, reach);
+  float wet = wash * (1.0 - smoothstep(0.0, 0.12, reach));
   vec3 colour = mix(mix(paper, outgoingLight, 0.45), outgoingLight, full);
   colour = mix(colour, colour * 0.8, wet * 0.6);
   // The pen line stays under the paint, as in a pen-and-wash sketch, and settles to a faint drawn edge.
