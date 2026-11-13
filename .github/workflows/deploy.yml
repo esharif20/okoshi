@@ -26,7 +26,13 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /okoshi/
-      - run: cp build/client/__spa-fallback.html build/client/404.html && touch build/client/.nojekyll
+      # With a base path, pages are prerendered into build/client/okoshi/ and the SPA fallback is index.html.
+      # Pages serves the artifact root at /okoshi/, so lift the pages to the root and keep the fallback as 404.html.
+      - run: |
+          cp build/client/index.html build/client/404.html
+          cp -R build/client/okoshi/. build/client/
+          rm -rf build/client/okoshi
+          touch build/client/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/client
