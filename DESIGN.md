@@ -26,7 +26,7 @@ One ground, one step, one ink, one accent.
 | `--surface` | `#ecf0f2` | One step from the paper: a second sheet, the table edge, mist |
 | `--ink` | `#1f3038` | All text, all line work, the table, roofs. At Night it is the ground |
 | `--muted` | `#5d6b72` | Secondary notes only |
-| `--accent` | `#d2381e` | Seal vermilion. The one action on each screen, Seals, the hat band |
+| `--accent` | `#c8202f` | Seal vermilion. The one action on each screen, Seals, the hat band |
 | `--accent-ink` | `#ffffff` | Text on the accent |
 
 Running text is always `--ink`. Surfaces are separated by a step in tone, never by a line or a shadow. The accent appears at most once per screen besides the Diorama.

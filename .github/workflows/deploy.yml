@@ -1,7 +1,6 @@
 name: deploy
+# Run by hand until the copy is approved for launch (GH-19 turns pushes back on).
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
