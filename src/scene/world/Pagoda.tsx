@@ -3,6 +3,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { layers } from "~/content";
 import { beatProgress, stage } from "~/stage";
+import { makePaper } from "../paper/material";
 
 // The five-storey Pagoda behind the House. Each storey is a Layer; it rises storey by storey
 // in the second half of the Fold, each one growing out of the one below like a paper pop-up.
@@ -19,6 +20,7 @@ const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 function skirt(a: number, b: number, drop: number, lift: number): THREE.BufferGeometry {
   const g = new THREE.BufferGeometry();
   const v: number[] = [];
+  const uv: number[] = [];
   const SEG = 6;
   for (let side = 0; side < 4; side++) {
     const rot = (side * Math.PI) / 2;
@@ -31,9 +33,11 @@ function skirt(a: number, b: number, drop: number, lift: number): THREE.BufferGe
       const p0 = at(-a + 2 * a * u0, 0, a), p1 = at(-a + 2 * a * u1, 0, a);
       const q0 = at(-b + 2 * b * u0, -drop + rise(u0), b), q1 = at(-b + 2 * b * u1, -drop + rise(u1), b);
       v.push(...p0, ...q0, ...q1, ...p0, ...q1, ...p1);
+      uv.push(u0, 0, u0, 1, u1, 1, u0, 0, u1, 1, u1, 0);
     }
   }
   g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
   g.computeVertexNormals();
   return g;
 }
@@ -44,8 +48,11 @@ export function Pagoda({ position, scale = 1 }: { position: [number, number, num
     () =>
       Array.from({ length: STOREYS }, (_, i) => {
         const half = 1.25 - i * 0.17;
+        const eave = half + OVERHANG - i * 0.06;
         return {
           half,
+          body: makePaper("screen", [half * 2, BODY_H]),
+          tiles: makePaper("eave", [eave * 2, Math.hypot(DROP, eave - half * 0.92)]),
           y: i * (BODY_H + 0.1),
           roof: skirt(half * 0.92, half + OVERHANG - i * 0.06, DROP, 0.16),
           layer: layers[i]?.id ?? `layer-${i}`,
@@ -70,13 +77,10 @@ export function Pagoda({ position, scale = 1 }: { position: [number, number, num
     <group position={position} scale={scale}>
       {storeys.map((s, i) => (
         <group key={s.layer} ref={(g) => { groups.current[i] = g; }} userData={{ layer: s.layer }}>
-          <mesh position={[0, BODY_H / 2, 0]} castShadow receiveShadow>
+          <mesh position={[0, BODY_H / 2, 0]} material={s.body} castShadow receiveShadow>
             <boxGeometry args={[s.half * 2, BODY_H, s.half * 2]} />
-            <meshLambertMaterial color="#f7f9fa" />
           </mesh>
-          <mesh geometry={s.roof} position={[0, BODY_H + DROP * 0.55, 0]} castShadow>
-            <meshLambertMaterial color="#1f3038" side={THREE.DoubleSide} />
-          </mesh>
+          <mesh geometry={s.roof} material={s.tiles} position={[0, BODY_H + DROP * 0.55, 0]} castShadow />
           {i === STOREYS - 1 && (
             <mesh position={[0, BODY_H + 0.95, 0]} castShadow>
               <coneGeometry args={[0.09, 1.5, 8]} />

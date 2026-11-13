@@ -8,6 +8,7 @@ import { matrix3d, type Pt } from "./homography";
 import { PLAN } from "./house/layout";
 import { HOUSE, type PanelShape } from "./house/walls";
 import { measureSheet, type SheetMeasure } from "./measure";
+import { makePaper, paperState } from "./paper/material";
 import { Pagoda } from "./world/Pagoda";
 
 export const PLAN_PAD = 0.4;
@@ -17,10 +18,8 @@ const DEG = Math.PI / 180;
 const HOUSE_VIEW = { target: [4.4, 0.5, 4.3] as [number, number, number], polar: 42 * DEG, azimuth: 30 * DEG, distance: 40 };
 const PLATE_VIEW = { target: [4.6, 1.4, 2.4] as [number, number, number], polar: 54 * DEG, azimuth: 34 * DEG, distance: 62 };
 
-const COLOURS: Record<PanelShape["look"], string> = { plaster: "#f7f9fa", screen: "#ecf0f2", eave: "#1f3038" };
-const MATERIALS = Object.fromEntries(
-  Object.entries(COLOURS).map(([look, color]) => [look, new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide })]),
-) as Record<PanelShape["look"], THREE.MeshLambertMaterial>;
+// Every paper material in the scene, so they can fade in together.
+export const papers = new Set<THREE.MeshLambertMaterial>();
 const SHADOW = new THREE.ShadowMaterial({ transparent: true, opacity: 0, color: "#1f3038" });
 const smooth01 = (a: number, b: number, x: number) => {
   const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -33,10 +32,12 @@ function Panel({ shape, children, register }: { shape: PanelShape; children?: Re
     g.translate(shape.length / 2, shape.height / 2, 0); // the hinge runs along the bottom edge
     return g;
   }, [shape.length, shape.height]);
+  const material = useMemo(() => makePaper(shape.look, [shape.length, shape.height]), [shape.look, shape.length, shape.height]);
+  useEffect(() => { papers.add(material); return () => { papers.delete(material); }; }, [material]);
   return (
     <group position={shape.origin} rotation={[0, shape.yaw, 0]}>
       <group ref={(g) => { if (g) register(shape.id, g); }}>
-        <mesh geometry={geometry} material={MATERIALS[shape.look]} castShadow receiveShadow />
+        <mesh geometry={geometry} material={material} castShadow receiveShadow />
         {children}
       </group>
     </group>
@@ -53,10 +54,12 @@ function House() {
     const progress = stage.getState().progress;
     // At rest the page is the printed Sheet alone; the flaps print in as the scroll begins.
     const shown = smooth01(0.015, 0.09, progress);
-    for (const m of Object.values(MATERIALS)) {
+    for (const m of papers) {
       m.opacity = shown;
       m.transparent = shown < 1;
     }
+    paperState.uInk.value = beatProgress(progress, "ink");
+    paperState.uPaint.value = beatProgress(progress, "paint");
     SHADOW.opacity = 0.22 * shown;
     const pose = poseAt(HOUSE.plan, beatProgress(progress, "fold"));
     hinges.current.forEach((g, id) => {
@@ -139,6 +142,7 @@ export default function Diorama({ stageEl }: { stageEl: HTMLElement }) {
   return (
     <Canvas
       frameloop="demand"
+      flat
       dpr={[1, 2]}
       shadows
       gl={{ alpha: true, antialias: true }}
