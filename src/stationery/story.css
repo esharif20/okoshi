@@ -1,10 +1,16 @@
+/* Empty between Beats that have no line. */
+.story-line:empty { display: none; }
+
 .story-line {
   position: absolute;
   z-index: 1;
   left: var(--margin);
   bottom: clamp(2rem, 6svh, 4rem);
-  max-width: 17ch;
-  font: 800 clamp(2rem, 3.6vw, 3.75rem) / 1.04 var(--font-display);
+  max-width: 16ch;
+  padding: 0.9rem 1.2rem 1.05rem;
+  background: var(--bg);
+  border-radius: 4px;
+  font: 800 clamp(1.75rem, 2.9vw, 3rem) / 1.06 var(--font-display);
   letter-spacing: -0.03em;
   text-wrap: balance;
   pointer-events: none;

@@ -8,7 +8,7 @@ const LINES: Partial<Record<Beat, string>> = {
   fold: "Then it gets built, a room for each kind of work.",
   ink: "Drawn in detail.",
   paint: "And finished properly.",
-  plate: "The house holds the work. The pagoda is the stack, from firmware to agents.",
+  plate: "The house holds the work. The pagoda is the stack.",
 };
 
 export function Story() {

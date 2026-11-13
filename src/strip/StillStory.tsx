@@ -8,7 +8,7 @@ const PANELS: { name: StillName; line: string; alt: string }[] = [
   { name: "fold", line: "Then it gets built, a room for each kind of work.", alt: "Paper walls folded up from the plan into a house with four rooms, beside a pagoda." },
   { name: "ink", line: "Drawn in detail.", alt: "The house and pagoda drawn in ink line and dotted shading." },
   { name: "paint", line: "And finished properly.", alt: "Colour spreading over the inked house and pagoda." },
-  { name: "plate", line: "The house holds the work. The pagoda is the stack, from firmware to agents.", alt: "The finished house and five-storey pagoda in a painted landscape with mountains behind." },
+  { name: "plate", line: "The house holds the work. The pagoda is the stack.", alt: "The finished house and five-storey pagoda in a painted landscape with mountains behind." },
 ];
 
 export function StillStory() {
