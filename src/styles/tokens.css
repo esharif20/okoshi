@@ -1,0 +1,43 @@
+/* Tokens from DESIGN.md. Components use these and nothing else. */
+:root {
+  --bg: #f7f9fa;
+  --surface: #ecf0f2;
+  --ink: #1f3038;
+  --muted: #5d6b72;
+  --accent: #d2381e;
+  --accent-ink: #ffffff;
+
+  --font-display: "Anton", "Arial Narrow", sans-serif;
+  --font-text: "Work Sans", system-ui, sans-serif;
+
+  --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --step-head: clamp(2.5rem, 1.2rem + 5vw, 5.5rem);
+
+  --margin: clamp(1rem, 0.5rem + 2vw, 2rem);
+  --gap-section: clamp(7.5rem, 5rem + 8vw, 15rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-quick: 180ms;
+  --dur-move: 600ms;
+}
+
+:root[data-night="true"] {
+  --bg: #1f3038;
+  --surface: #2a3d46;
+  --ink: #f7f9fa;
+  --muted: #b4c0c6;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --font-display: var(--font-display);
+  --font-text: var(--font-text);
+}
