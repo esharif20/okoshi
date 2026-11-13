@@ -7,7 +7,8 @@
     "build": "react-router build",
     "preview": "sirv build/client --port 4173 --single __spa-fallback.html",
     "check": "react-router typegen && tsc",
-    "test": "vitest run"
+    "test": "vitest run",
+    "cv": "uv run --quiet --with pymupdf python tools/cv/make_cv.py"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -31,6 +32,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.187.0",
+    "pdfjs-dist": "^6.5.438",
     "sirv-cli": "^3.0.1",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
