@@ -50,7 +50,7 @@ This needs [uv](https://docs.astral.sh/uv/). It reads `docs/Eshan_Sharif_CV.pdf`
 CV_SOURCE=~/Documents/new-cv.pdf npm run cv
 ```
 
-The script redacts any number of 10 or more digits from the page, clears the PDF's dates, and refuses to write a CV in which it found no phone number. Run `npm test -- cv` afterwards: it fails if any run of 10 or more digits is left.
+The script redacts any number of 10 or more digits from the page, clears the PDF's dates and the pdfTeX banner, and refuses to write a CV in which it found no phone number. Run `npm test -- cv` afterwards. It reads the page text, the link targets, the metadata and every stream after inflating it, and fails on `tel:`, `+44` or any run of 10 or more digits.
 
 ## Capture Clips
 
