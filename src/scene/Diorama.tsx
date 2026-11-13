@@ -33,10 +33,18 @@ const look = { leanX: 0, leanY: 0, towardsX: 0, towardsY: 0, turn: 0, towardsTur
 const MAX_TURN = 0.6;
 
 function Rig() {
-  const { camera, invalidate, gl } = useThree();
+  const { camera, invalidate, gl, size } = useThree();
   const stageEl = useMemo(() => gl.domElement.closest<HTMLElement>("[data-stage]"), [gl]);
 
   useEffect(() => stage.subscribe(() => invalidate()), [invalidate]);
+
+  // The picture is composed for a wide screen. On a tall one the lens opens up so the same width is in view.
+  useEffect(() => {
+    const lens = camera as THREE.PerspectiveCamera;
+    lens.fov = FOV * Math.min(2.4, Math.max(1, 1.45 / (size.width / size.height)));
+    lens.updateProjectionMatrix();
+    invalidate();
+  }, [camera, size.width, size.height, invalidate]);
 
   useEffect(() => {
     const el = gl.domElement;

@@ -1,11 +1,12 @@
 import { createStore, useStore } from "zustand";
-import type { RoomId } from "~/content";
+import type { LayerId, RoomId } from "~/content";
 
 export type Edition = "desktop" | "phone" | "still";
 
 export type StageState = {
   progress: number;
   hoveredRoom: RoomId | null;
+  hoveredLayer: LayerId | null;
   openRoom: RoomId | null;
   night: boolean;
   edition: Edition;
@@ -19,6 +20,7 @@ export type StageState = {
 export const initialStage: StageState = {
   progress: 0,
   hoveredRoom: null,
+  hoveredLayer: null,
   openRoom: null,
   night: false,
   // The prerendered page is the Still edition; detectEdition upgrades it in the browser.

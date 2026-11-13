@@ -1,0 +1,68 @@
+.story-line {
+  position: absolute;
+  z-index: 1;
+  left: var(--margin);
+  bottom: clamp(2rem, 6svh, 4rem);
+  max-width: 17ch;
+  font: 800 clamp(2rem, 3.6vw, 3.75rem) / 1.04 var(--font-display);
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  pointer-events: none;
+  animation: story-in 700ms var(--ease-out) both;
+}
+@keyframes story-in {
+  from { opacity: 0; transform: translateY(18px); }
+}
+
+.story-hint {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: clamp(1.5rem, 4svh, 2.5rem);
+  transform: translateX(-50%);
+  padding: 0.5rem 0.9rem;
+  background: var(--bg);
+  border-radius: 4px;
+  font-weight: 700;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms var(--ease-out);
+}
+.story-hint[data-show="true"] { opacity: 1; }
+
+/* The Facts of the Room being pointed at, on a slip of paper at the right. */
+.facts {
+  position: absolute;
+  z-index: 1;
+  right: var(--margin);
+  bottom: clamp(2rem, 6svh, 4rem);
+  width: min(24rem, 30vw);
+  padding: 1.5rem 1.6rem 1.6rem;
+  background: var(--bg);
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(14px) rotate(0.6deg);
+  transition: opacity 260ms var(--ease-out), transform 420ms var(--ease-out);
+}
+.facts[data-show="true"] { opacity: 1; transform: none; }
+.facts h2 { font-size: 2rem; line-height: 1; }
+.facts p { margin-top: 0.6rem; line-height: 1.4; }
+.facts ul { margin: 0.9rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.4rem; }
+.facts li { padding-left: 1.1rem; position: relative; line-height: 1.35; }
+.facts li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .facts, .story-hint { display: none; }
+  .story-line { left: 16px; right: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .story-line { animation: none; } }

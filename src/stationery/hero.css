@@ -1,8 +1,11 @@
 /* The stage: pinned to the screen for the whole Opening sequence. */
 #opening[data-edition="desktop"] { height: 700svh; }
 
+/* Pinned only where the Diorama plays; elsewhere the first screen scrolls away like any other. */
+#opening[data-edition="desktop"] .hero { position: sticky; }
+
 .hero {
-  position: sticky;
+  position: relative;
   top: 0;
   height: 100svh;
   min-height: 560px;
@@ -11,11 +14,12 @@
   color: var(--ink);
 }
 
-.hero-canvas {
+.hero-canvas, .hero-poster {
   position: absolute;
   inset: 0;
   z-index: 0;
 }
+.hero-poster img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
 
 .hero-top {
   position: absolute;

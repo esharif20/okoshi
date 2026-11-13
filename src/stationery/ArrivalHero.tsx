@@ -3,7 +3,9 @@ import { DioramaSlot } from "~/scene/DioramaSlot";
 import { Clock } from "~/ui/Clock";
 import { Portrait } from "~/ui/Portrait";
 import { SealButton } from "~/ui/SealButton";
+import { Still } from "~/strip/Still";
 import { RoomLabels } from "./RoomLabels";
+import { Story } from "./Story";
 import "./hero.css";
 
 // The first screen: the painted landscape fills it, with the name set in the sky.
@@ -12,6 +14,8 @@ export function ArrivalHero() {
   const contact = site.email ? `mailto:${site.email}` : "#contact";
   return (
     <div className="hero" data-stage>
+      {/* The recorded first frame: what phones and reduced-motion visitors see, and what desktop shows until the Diorama draws. */}
+      <Still name="arrival" className="hero-poster" eager alt="A painted landscape at dawn: a traveller with a straw hat on his back stands on a path that leads through a red gate towards mountains." />
       <DioramaSlot className="hero-canvas" />
 
       <header className="hero-top">
@@ -30,6 +34,7 @@ export function ArrivalHero() {
       </header>
 
       <RoomLabels />
+      <Story />
 
       <div className="hero-title">
         <h1>{site.name}</h1>
