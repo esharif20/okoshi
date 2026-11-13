@@ -12,7 +12,7 @@ Each point below needs a yes, a no or a correction.
 2. **Roles only on LinkedIn.** Residential Community Assistant (University of Warwick, Sep 2025 to Jul 2026) and Research Assistant, NLP and Synthetic Data (URSS, Jul 2024 to Oct 2024) are not on the CV. Both are included. The URSS dates overlap the Jazz Pharmaceuticals internship (Jul to Sep 2024). The LinkedIn text for both was cut off in the screenshot, so their last points paraphrase what was visible.
 3. **TIA Centre title.** The CV says "Research Intern, Applied AI in Medical Imaging". LinkedIn says "Summer Research Intern - Computational Pathology". The site uses the CV title.
 4. **Medical AI society name.** The CV says "Warwick Medical AI Society". LinkedIn says "Warwick Medical AI and Innovation Society". The site uses the CV name.
-5. **Mini C parser.** The CV says an LALR(1) parser. The repo README describes a predictive recursive descent parser. The site says only "a lexer and parser" until this is settled.
+5. **Mini C parser.** The CV says an LALR(1) parser. The repo README describes a predictive recursive descent parser, and the grammar file shown in the approach Panel is headed "FINAL LL(k) GRAMMAR". The site says only "a lexer and parser" until this is settled.
 6. **Deforestation repo.** `esharif20/Treefera` has no README or code, so the Project shows no repo link.
 7. **Finance Agent demo.** https://finance-agent-demo-chi.vercel.app, taken from the repo's merged pull requests. It answered with HTTP 200 on 2026-11-13.
 8. **Room meanings.** The glossary names the six Rooms but not what each stands for. Every "Stands for" line is a sample.
@@ -23,6 +23,9 @@ Each point below needs a yes, a no or a correction.
 13. **Software Factory numbers.** They come from the project's own README, not the CV. See Sources for figures.
 14. **Finance Agent numbers.** They come from the repo, not the CV. See Sources for figures.
 15. **Role summaries.** Each Role's one-line summary is a paraphrase of its CV bullets, not a quotation.
+16. **Pictures.** Thirteen pictures are listed under Pictures with the source of each. Please check that each may be shown, the dissertation radar and the two hackathon figures above all.
+17. **Deforestation figures show PALSAR.** Both figures are of L-band PALSAR HV backscatter. The copy, following the CV, names Sentinel-1. The project's README uses both. Say which the text should name.
+18. **Finance Agent demo errors.** The hosted demo's Assistant and Overview were failing on 2026-11-13 (see Pictures). The result Panel's picture is the demo site's own worked example, not a live reply.
 
 No phone number appears anywhere on the site.
 
@@ -337,6 +340,61 @@ Transactions land in a SQLCipher ledger with its key in the Keychain. Rules, cor
 The monthly summary went from 8 seconds to under 300 ms. Every figure in an answer comes from the ledger, and the public demo runs on six fictional households.
 
 Figure: <300 ms, monthly summary, down from 8 s
+
+## Pictures
+
+Thirteen pictures, in `public/work/<slug>/`. Each is real: a screenshot of a live public page, or a figure the project itself saved. None was drawn or mocked up for this site, and none of the projects was run to make them. `tools/media/pictures.json` holds this list, `tools/media/capture.cjs` takes the screenshots and `tools/media/make.mjs` converts them to WebP (at most 1600px wide, under 300 KB, metadata stripped).
+
+`picture.src` is relative to the site base, with no leading slash, like the other files in `public/`.
+
+### football-intelligence
+
+- `work/football-intelligence/keypoints.webp`, problem Panel. Taken from the repository as saved. Source: esharif20/football-analytics-dashboard, backend/tests/keypoint_fix_demo.png. A figure saved by the project's own keypoint test.
+  Alt text: Two diagrams of a football pitch with 32 numbered keypoints. Before a fix, 29 are found and three are marked missing with red crosses. After it, the three are filled in grey.
+- `work/football-intelligence/radar.webp`, approach Panel. Taken from the repository as saved. Source: esharif20/Dissertation (private), voronoi_radar.png. Output of the pipeline, used as a figure in the dissertation.
+  Alt text: A top-down pitch radar. Pink and blue dots mark the players of two teams, and shaded regions show which team controls each part of the pitch.
+- `work/football-intelligence/probing.webp`, result Panel. Taken from the repository as saved. Source: esharif20/football-analytics-dashboard, dissertation/figures/linear_probing_results.png. A result figure from the dissertation.
+  Alt text: Bar chart of macro F1 on four tactical tasks for Qwen2-VL-7B, comparing linear probes on text, visual and combined inputs with prompting. The probes beat prompting on pressing type and compactness trend.
+
+### deforestation-detection
+
+- `work/deforestation-detection/backscatter.webp`, approach Panel. Taken from the project folder as saved. Source: The hackathon project folder (not on GitHub), figures/fig07_palsar_hv_trajectory.png. A figure exported by the project's notebooks for the presentation.
+  Alt text: Line chart of median PALSAR HV radar backscatter from 2017 to 2024. Stable forest stays near -11.5 dB. Cleared pixels fall away from it, 1.73 dB lower by 2024.
+- `work/deforestation-detection/change-map.webp`, result Panel. Taken from the project folder as saved. Source: The hackathon project folder (not on GitHub), figures/fig08_hv_change_map.png. A figure exported by the project's notebooks for the presentation.
+  Alt text: Left: a map of the change in HV radar backscatter from 2017 to 2024, with a red band of loss across the upper right. Right: histograms of that change for 35,709 cleared and 268,477 stable pixels. The cleared pixels sit lower.
+
+### minic-compiler
+
+- `work/minic-compiler/program.webp`, problem Panel. Captured from a live page. Source: Screenshot of github.com/esharif20/minic-compiler, code/tests/fibonacci/fibonacci.c, taken 2026-11-13.
+  Alt text: The fibonacci.c test program in the compiler's repository on GitHub: a MiniC function with declarations, a while loop and an if-else.
+- `work/minic-compiler/grammar.webp`, approach Panel. Captured from a live page. Source: Screenshot of github.com/esharif20/minic-compiler, grammar/Task_1_2_1.txt, taken 2026-11-13.
+  Alt text: The grammar file in the compiler's repository on GitHub. Its header reads: final LL(k) grammar, left recursion removed, precedence enforced. The production rules follow.
+- `work/minic-compiler/tests.webp`, result Panel. Captured from a live page. Source: Screenshot of GitHub Actions run 19601759266 on esharif20/minic-compiler, taken 2026-11-13.
+  Alt text: GitHub Actions run 35 on the compiler's repository, titled 'finished the project'. Status: Success. The build-and-test job passed in 55 seconds.
+
+### software-factory
+
+- `work/software-factory/team.webp`, approach Panel. Taken from the repository as saved. Source: esharif20/herdr-software-factory, herdr/herdr-team/preview.png. The repo's own screenshot of the team running in Herdr.
+  Alt text: Herdr running the team on a benchmark project. A side panel lists the Lead, four Builders at work, Reviewers and UI Polish. The main pane shows a builder editing a test file and a test run with 30 passes and no failures.
+- `work/software-factory/benchmarks.webp`, result Panel. Captured from a live page. Source: Screenshot of the Status table in the README on github.com/esharif20/herdr-software-factory, taken 2026-11-13.
+  Alt text: The Status table from the project's README. Three benchmarks, with time against one Opus session of -61%, -36% and -42%, cost of -14%, -24% and +8%, and hidden-test scores for team and solo.
+
+### finance-agent
+
+- `work/finance-agent/transactions.webp`, problem Panel. Captured from a live page. Source: Screenshot of the live demo, /app, Transactions tab, taken 2026-11-13. Synthetic data.
+  Alt text: The demo app's Transactions screen, under a banner reading 'Synthetic data. Nothing here is real.' Made-up transactions are listed by day, each with a merchant, an amount and a category.
+- `work/finance-agent/architecture.webp`, approach Panel. Captured from a live page. Source: Screenshot of the live demo, /architecture, taken 2026-11-13.
+  Alt text: The demo's architecture page, headed 'How the Assistant answers'. Four cards read: 30 parts, 2 hosts outside the Mac, 1 retry for a reply that misquotes a figure, 0 tools that can pay or move money.
+- `work/finance-agent/answer.webp`, result Panel. Captured from a live page. Source: Screenshot of the live demo's landing page, section "The app itself", taken 2026-11-13. It is the site's worked example of an Assistant answer on synthetic data, not a live reply: the demo's Assistant endpoint returned errors that day.
+  Alt text: From the demo site: the question 'How much did I spend on eating out in October?' is answered as £226.40 across 14 payments, up from £189.20 in September, with the ledger query behind it shown beneath.
+
+### Not used, and why
+
+- **Annotated match frames** (player boxes, tracking, keypoints on video) exist in the private dissertation repo. They are frames of a television broadcast with a third party's watermark, so none is used. They are the clearest pictures of the tracking. Say if they may be shown.
+- **The satellite photograph and the biomass and land-cover figures** in the hackathon folder are made from imagery and data products supplied for the hackathon. Only the two figures made from radar backscatter and the public Hansen forest-loss record are used.
+- **The Mini C compiler was not run.** The machine has no LLVM toolchain. Its pictures are screenshots of the repository and of its last test run on GitHub.
+- **The Software Factory diagram** in the README does not render on GitHub ("Unable to render rich display"), so the repo's own screenshot is used.
+- **A live Assistant answer and the Overview screen** could not be captured. On 2026-11-13 the hosted demo answered `/api/chat` with a server error every time, and `/api/transactions` and `/api/months` some of the time.
 
 ## Samples
 

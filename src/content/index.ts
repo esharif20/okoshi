@@ -220,18 +220,30 @@ export const projects: Project[] = [
         kind: "problem",
         heading: "One camera, twenty-two players",
         text: "A broadcast feed is one moving camera that cuts, zooms and loses players off screen. The question was how much tactical analysis that single feed can still support.",
+        picture: {
+          src: "work/football-intelligence/keypoints.webp",
+          alt: "Two diagrams of a football pitch with 32 numbered keypoints. Before a fix, 29 are found and three are marked missing with red crosses. After it, the three are filled in grey.",
+        },
       },
       {
         kind: "approach",
         heading: "Track, classify, then explain",
         text: "YOLOv8x and ByteTrack follow every player. A 2.5D CNN with a calibrated cascade labels events. A language model then writes commentary from the numbers, checked by an evaluation harness with FActScore, G-Eval and a 58-question test set judged by Claude Haiku and GPT-4o.",
         figure: { value: "24 FPS", measures: "with ONNX FP16 batching on a RunPod GPU worker" },
+        picture: {
+          src: "work/football-intelligence/radar.webp",
+          alt: "A top-down pitch radar. Pink and blue dots mark the players of two teams, and shaded regions show which team controls each part of the pitch.",
+        },
       },
       {
         kind: "result",
         heading: "Fewer invented numbers",
         text: "Tracking reached 0.916 IDF1. Event macro F1 rose from 0.516 to 0.647. Linear probes on Qwen2-VL-7B compared text inputs with chart inputs, to stop invented statistics. Grounding rose from 48.7% to 70.2%.",
         figure: { value: "70.2%", measures: "of stated statistics grounded in the data" },
+        picture: {
+          src: "work/football-intelligence/probing.webp",
+          alt: "Bar chart of macro F1 on four tactical tasks for Qwen2-VL-7B, comparing linear probes on text, visual and combined inputs with prompting. The probes beat prompting on pressing type and compactness trend.",
+        },
       },
     ],
     repo: "https://github.com/esharif20/football-analytics-dashboard",
@@ -260,12 +272,20 @@ export const projects: Project[] = [
         heading: "Radar instead of light",
         text: "Sentinel-1 radar passes through cloud. Eight years of it over 100,000 ha came in through Earth Engine. A Docker API, an MCP server and a dashboard went to Cloud Run, built with Claude sub-agents.",
         figure: { value: "8 years", measures: "of radar over 100,000 ha" },
+        picture: {
+          src: "work/deforestation-detection/backscatter.webp",
+          alt: "Line chart of median PALSAR HV radar backscatter from 2017 to 2024. Stable forest stays near -11.5 dB. Cleared pixels fall away from it, 1.73 dB lower by 2024.",
+        },
       },
       {
         kind: "result",
         heading: "Forest loss, found by radar",
         text: "The system flagged 6,545 ha of forest loss and won the hardest of the challenge tracks, against 25 teams.",
         figure: { value: "6,545 ha", measures: "flagged" },
+        picture: {
+          src: "work/deforestation-detection/change-map.webp",
+          alt: "Left: a map of the change in HV radar backscatter from 2017 to 2024, with a red band of loss across the upper right. Right: histograms of that change for 35,709 cleared and 268,477 stable pixels. The cleared pixels sit lower.",
+        },
       },
     ],
     room: "lookout",
@@ -286,17 +306,29 @@ export const projects: Project[] = [
         kind: "problem",
         heading: "From text to a running program",
         text: "Source code is just characters. A compiler has to turn it into a structure it can check, then into instructions a machine can run, and say exactly where the programmer went wrong.",
+        picture: {
+          src: "work/minic-compiler/program.webp",
+          alt: "The fibonacci.c test program in the compiler's repository on GitHub: a MiniC function with declarations, a while loop and an if-else.",
+        },
       },
       {
         kind: "approach",
         heading: "Every stage, source to binary",
         text: "A lexer and parser build a full syntax tree. Semantic analysis checks it against scoped symbol tables. Code generation emits LLVM IR for expressions and control flow, and llc and clang link it into x86-64 binaries.",
+        picture: {
+          src: "work/minic-compiler/grammar.webp",
+          alt: "The grammar file in the compiler's repository on GitHub. Its header reads: final LL(k) grammar, left recursion removed, precedence enforced. The production rules follow.",
+        },
       },
       {
         kind: "result",
         heading: "Smaller code, tested",
         text: "Constant folding and dead code elimination passes cut the generated IR by 20%, measured across more than 120 tests.",
         figure: { value: "20%", measures: "less IR" },
+        picture: {
+          src: "work/minic-compiler/tests.webp",
+          alt: "GitHub Actions run 35 on the compiler's repository, titled 'finished the project'. Status: Success. The build-and-test job passed in 55 seconds.",
+        },
       },
     ],
     repo: "https://github.com/esharif20/minic-compiler",
@@ -324,12 +356,20 @@ export const projects: Project[] = [
         kind: "approach",
         heading: "A Lead, lanes and checks",
         text: "A Lead plans the work into lanes that never touch the same files. Builders work in their own git worktrees. Scripts run the tests and merge by exact commit, and a reviewer reads the riskiest changes. One rule was set before any run: the team may cost at most 15% more than one agent. The build log is public.",
+        picture: {
+          src: "work/software-factory/team.webp",
+          alt: "Herdr running the team on a benchmark project. A side panel lists the Lead, four Builders at work, Reviewers and UI Polish. The main pane shows a builder editing a test file and a test run with 30 passes and no failures.",
+        },
       },
       {
         kind: "result",
         heading: "Faster at the same quality",
         text: "On three benchmarks the team finished 36% to 61% sooner than one Opus session. It passed as many hidden tests or more each time. Cost ranged from 24% less to 8% more, inside the cap.",
         figure: { value: "−61%", measures: "wall time on the best benchmark" },
+        picture: {
+          src: "work/software-factory/benchmarks.webp",
+          alt: "The Status table from the project's README. Three benchmarks, with time against one Opus session of -61%, -36% and -42%, cost of -14%, -24% and +8%, and hidden-test scores for team and solo.",
+        },
       },
     ],
     repo: "https://github.com/esharif20/herdr-software-factory",
@@ -352,17 +392,29 @@ export const projects: Project[] = [
         kind: "problem",
         heading: "Bank data is too private for the cloud",
         text: "Budgeting apps send every transaction to someone else's server, and chat assistants invent numbers. A finance tool needs to keep the data at home and get the sums right.",
+        picture: {
+          src: "work/finance-agent/transactions.webp",
+          alt: "The demo app's Transactions screen, under a banner reading 'Synthetic data. Nothing here is real.' Made-up transactions are listed by day, each with a merchant, an amount and a category.",
+        },
       },
       {
         kind: "approach",
         heading: "Local, encrypted, read-only",
         text: "Transactions land in a SQLCipher ledger with its key in the Keychain. Rules, corrections and a local Ollama model sort them into categories. Questions in plain English are answered by retrieving the figures from the ledger first. The app can never move money.",
+        picture: {
+          src: "work/finance-agent/architecture.webp",
+          alt: "The demo's architecture page, headed 'How the Assistant answers'. Four cards read: 30 parts, 2 hosts outside the Mac, 1 retry for a reply that misquotes a figure, 0 tools that can pay or move money.",
+        },
       },
       {
         kind: "result",
         heading: "Fast, and the numbers add up",
         text: "The monthly summary went from 8 seconds to under 300 ms. Every figure in an answer comes from the ledger, and the public demo runs on six fictional households.",
         figure: { value: "<300 ms", measures: "monthly summary, down from 8 s" },
+        picture: {
+          src: "work/finance-agent/answer.webp",
+          alt: "From the demo site: the question 'How much did I spend on eating out in October?' is answered as £226.40 across 14 payments, up from £189.20 in September, with the ledger query behind it shown beneath.",
+        },
       },
     ],
     repo: "https://github.com/esharif20/finance-agent",
