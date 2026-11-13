@@ -5,12 +5,14 @@
   "scripts": {
     "dev": "react-router dev",
     "build": "react-router build",
-    "preview": "sirv build/client --port 4173 --single __spa-fallback.html",
+    "preview": "sirv build/client --dev --port 4173 --single __spa-fallback.html",
     "check": "react-router typegen && tsc",
     "test": "vitest run",
     "cv": "uv run --quiet --with pymupdf python tools/cv/make_cv.py"
   },
   "dependencies": {
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/work-sans": "^5.3.0",
     "@gsap/react": "^2.1.2",
     "@react-router/node": "^8.5.1",
     "@react-three/drei": "^10.7.9",

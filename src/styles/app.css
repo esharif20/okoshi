@@ -1,1 +1,6 @@
+@import "@fontsource/anton/latin-400.css";
+@import "@fontsource/work-sans/latin-400.css";
+@import "@fontsource/work-sans/latin-600.css";
 @import "tailwindcss";
+@import "./tokens.css";
+@import "./base.css";
