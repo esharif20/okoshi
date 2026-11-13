@@ -78,6 +78,11 @@ def main() -> int:
     # Dates and producer strings are dropped too: they would read as long digit runs.
     doc.set_metadata({"title": "Eshan Sharif, CV", "author": "Eshan Sharif", "creator": "", "producer": "", "creationDate": "", "modDate": ""})
     doc.del_xml_metadata()
+    # pdfTeX leaves its version banner in the Info dictionary. It carries a
+    # long version number that the leak test would read as a phone number.
+    kind, info = doc.xref_get_key(-1, "Info")
+    if kind == "xref":
+        doc.xref_set_key(int(info.split()[0]), "PTEX.Fullbanner", "null")
     out.parent.mkdir(parents=True, exist_ok=True)
     doc.save(out, garbage=4, deflate=True, clean=True)
     print(f"cv: wrote {out} ({found} number(s) removed)")
