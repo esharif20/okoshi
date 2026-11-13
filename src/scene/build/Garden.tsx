@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 import { groundHeight, pathX } from "../world/Land";
-import { Traveller } from "./Traveller";
 
 // What stands in the landscape before anything is built: the red gate on the path, the pines, a stone lantern.
 
@@ -46,7 +45,6 @@ export function Garden() {
   return (
     <group>
       <Gate z={74} />
-      <Traveller />
       <Lantern at={[5.2, 12]} />
       <Lantern at={[-1.8, 12.4]} />
     </group>

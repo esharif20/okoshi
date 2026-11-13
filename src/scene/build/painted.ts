@@ -61,24 +61,27 @@ const COMPOSE = /* glsl */ `
   // Before the ink, the drawing is there in faint pencil.
   vec3 drawing = mix(paper, uInkColour, max(drawn * mix(0.14, 0.9, inked), dots * 0.5));
 
-  // Paint is laid on with a wide brush: long strokes sweep across the building one after another, each
-  // starting a little later than the last, with a dry, streaked leading edge where the bristles run out.
-  vec2 across = vec2(dot(vPaintWorld.xz, vec2(0.92, 0.39)), vPaintWorld.y);  // along the wall, and up it
-  float lane = (across.y + sin(across.x * 0.5) * 0.25) / 1.15;               // each stroke is about a metre tall
-  float stroke = floor(lane);
-  float order = pHash(vec2(stroke, 3.7));                                    // which stroke is laid when
-  float dirn = mod(stroke, 2.0) < 1.0 ? 1.0 : -1.0;                          // the brush goes out, then back
-  float along = (across.x * dirn + 30.0) / 60.0;
-  float bristle = pNoise(vec2(across.x * 0.7, lane * 26.0));
-  float reach = (uPaint * 2.3 - order * 0.9 - along * 0.55 - 0.05) + (bristle - 0.5) * 0.16 - (0.5 - abs(fract(lane) - 0.5)) * -0.06;
+  // Paint blooms out from seed points, as a loaded brush touched to wet paper: each seed starts at its own
+  // moment and spreads with a ragged front, and neighbouring blooms run into each other.
+  vec2 face = vec2(dot(vPaintWorld.xz, vec2(0.92, 0.39)), vPaintWorld.y * 1.25) / 2.6;
+  vec2 cellId = floor(face);
+  float reach = -1.0;
+  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+    vec2 c = cellId + vec2(float(i), float(j));
+    vec2 seed = c + 0.2 + 0.6 * vec2(pHash(c), pHash(c + 17.3));
+    float starts = pHash(c + 5.1) * 0.62 + climb * 0.12;
+    reach = max(reach, (uPaint * 1.75 - starts) * 2.4 - length(face - seed));
+  }
+  reach += (fray - 0.5) * 0.34 + (bloom - 0.5) * 0.3;
   // Pointing at a room draws its paint back to the ink underneath, with the same ragged edge.
   float lifted = uLift * (1.0 - smoothstep(uLiftRadius * 0.72, uLiftRadius, distance(vPaintWorld, uLiftAt) + (fray - 0.5) * 0.9));
   reach = mix(reach, -0.2, lifted);
-  float wash = smoothstep(0.0, 0.05, reach);
-  float full = smoothstep(0.03, 0.42, reach);
-  float wet = wash * (1.0 - smoothstep(0.0, 0.12, reach));
+  float wash = smoothstep(0.0, 0.035, reach);
+  float full = smoothstep(0.02, 0.5, reach);
+  // Pigment gathers at the edge of a wash as it dries: a thin dark rim round every bloom.
+  float wet = wash * (1.0 - smoothstep(0.0, 0.1, reach));
   vec3 colour = mix(mix(paper, outgoingLight, 0.45), outgoingLight, full);
-  colour = mix(colour, colour * 0.8, wet * 0.6);
+  colour = mix(colour, colour * 0.62, wet * 0.85);
   // The pen line stays under the paint, as in a pen-and-wash sketch, and settles to a faint drawn edge.
   colour = mix(colour, uInkColour, drawn * mix(0.6, 0.12, full));
   outgoingLight = mix(drawing, colour, wash);

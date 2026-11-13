@@ -1,10 +1,11 @@
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { SplitText } from "gsap/SplitText";
 
 // GSAP and its plugins are registered here, once, for every page. Nothing runs while the pages are prerendered.
-if (typeof window !== "undefined") gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText);
+if (typeof window !== "undefined") gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText, ScrambleTextPlugin);
 
 export { gsap, ScrollTrigger, SplitText, useGSAP };
 

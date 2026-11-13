@@ -60,35 +60,70 @@
   text-underline-offset: 5px;
 }
 
-/* The name stands in the sky and is left behind as the visitor walks in. */
+/* The name runs the full width of the sky, behind him; both are left behind as the visitor walks in. */
 .hero-title {
   position: absolute;
   z-index: 1;
   left: var(--margin);
   right: var(--margin);
-  top: clamp(6.5rem, 13svh, 10rem);
-  transform: translateY(calc(var(--progress, 0) * -46svh));
-  opacity: calc(1 - var(--progress, 0) * 9);
+  top: clamp(5.5rem, 11svh, 8.5rem);
+  translate: 0 calc(var(--progress, 0) * -60svh);
+  opacity: calc(1 - var(--progress, 0) * 12);
   pointer-events: none;
 }
 .hero-title h1 {
-  font-size: clamp(3.5rem, 9.4vw, 10.5rem);
-  line-height: 0.95;
+  font-size: clamp(3.5rem, 15.4vw, 19rem);
+  line-height: 0.9;
   white-space: nowrap;
+  /* Travelling fast pulls the name apart into its inks, as a misregistered print would. */
+  text-shadow: calc(var(--speed, 0) * -14px) 0 rgb(200 32 47 / 0.75), calc(var(--speed, 0) * 14px) 0 rgb(64 150 168 / 0.75);
 }
-.hero-title p {
-  margin-top: clamp(1.25rem, 2.6vw, 2.5rem);
-  max-width: 34ch;
-  font-size: var(--step-lead);
-  line-height: 1.35;
-  font-weight: 700;
+
+.hero-person {
+  position: absolute;
+  z-index: 1;
+  right: clamp(4rem, 14vw, 16rem);
+  bottom: 0;
+  height: min(84svh, 60vw);
+  translate: 0 calc(var(--progress, 0) * 1500svh);
+  pointer-events: none;
 }
+.hero-person img {
+  display: block;
+  height: 112%;
+  width: auto;
+  /* A contact shadow so he stands in the picture's light instead of floating on it. */
+  filter: drop-shadow(-18px 10px 22px rgb(31 48 56 / 0.3));
+}
+
+/* What he does, set as one statement: the nouns large in the display face, the joining words small between them. */
+.hero-claim {
+  position: absolute;
+  z-index: 1;
+  left: var(--margin);
+  bottom: clamp(5.5rem, 13svh, 8rem);
+  max-width: 13ch;
+  font: 800 clamp(2rem, 4.3vw, 5rem) / 0.98 var(--font-display);
+  letter-spacing: -0.03em;
+  translate: 0 calc(var(--progress, 0) * -40svh);
+  opacity: calc(1 - var(--progress, 0) * 14);
+  pointer-events: none;
+}
+.hero-claim small {
+  font: 700 0.24em / 1 var(--font-text);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 0.5em;
+}
+.hero-claim small:first-child { display: block; margin-bottom: 0.9em; color: var(--accent); }
 
 @media (max-width: 900px) {
   .hero-top { inset: 20px 16px auto; grid-template-columns: 1fr auto; }
   .hero-nav, .hero-clock { display: none; }
-  .hero-title { left: 16px; right: 16px; top: 6.5rem; }
-  .hero-title h1 { white-space: normal; font-size: 21vw; }
+  .hero-title { left: 16px; right: 16px; top: 5.5rem; }
+  .hero-title h1 { white-space: normal; font-size: 23vw; }
+  .hero-person { right: -1rem; height: 62svh; }
+  .hero-claim { left: 16px; bottom: 2rem; max-width: 9ch; font-size: 9vw; }
 }
 
 /* The last step through the door: the room's paper screens take the whole view, and the page that follows is that paper. */
@@ -101,3 +136,42 @@
   pointer-events: none;
   opacity: calc((var(--progress, 0) - 0.972) * 36);
 }
+
+/* ---- Print treatment over the Diorama ---- */
+.hero { --inked: calc(min(1, max(0, (var(--progress, 0) - 0.47) * 28)) * min(1, max(0, (0.6 - var(--progress, 0)) * 28))); }
+
+/* The Ink beat turns the whole picture into a manga page: black and white, harder, inside a panel frame.
+   Colour comes back with the Paint. */
+#opening[data-edition="desktop"] .hero-canvas canvas { filter: grayscale(var(--inked)) contrast(calc(1 + var(--inked) * 0.35)); }
+
+.hero-vignette, .hero-speed, .hero-grain, .hero-panel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hero-vignette {
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 46%, transparent 52%, rgb(31 48 56 / 0.34) 100%);
+}
+.hero-grain {
+  z-index: 1;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0 0.38  0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* Speed lines: thin rays from the vanishing point, only while the visitor is moving fast. */
+.hero-speed {
+  z-index: 1;
+  opacity: calc(var(--speed, 0) * 0.55);
+  background: repeating-conic-gradient(from 0deg at 50% 44%, transparent 0deg 2.2deg, rgb(255 255 255 / 0.9) 2.2deg 2.5deg, transparent 2.5deg 5.3deg, rgb(31 48 56 / 0.55) 5.3deg 5.45deg);
+  mask-image: radial-gradient(ellipse at 50% 44%, transparent 30%, #000 78%);
+  transition: opacity 180ms linear;
+}
+.hero-panel {
+  z-index: 2;
+  opacity: var(--inked);
+  border: clamp(10px, 1.4vw, 22px) solid var(--bg);
+  outline: 4px solid var(--ink);
+  outline-offset: calc(clamp(10px, 1.4vw, 22px) * -1 - 4px);
+}
+#opening:not([data-edition="desktop"]) :is(.hero-speed, .hero-panel) { display: none; }

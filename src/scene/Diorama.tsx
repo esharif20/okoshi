@@ -4,7 +4,8 @@ import * as THREE from "three";
 import { stage } from "~/stage";
 import { FOV, orbitAt, orbitPose, type Key, type Orbit } from "./camera";
 import { Compound } from "./build/Compound";
-import { groundHeight, inFrame, inHouse, Land, landState, SITE, toFrame, TURN, VIEW_AZIMUTH } from "./world/Land";
+import { groundHeight, inFrame, inHouse, Land, landState, SITE, toFrame, TURN, VIEW_AZIMUTH, worldTime } from "./world/Land";
+import { Petals } from "./world/Petals";
 
 const DEG = Math.PI / 180;
 
@@ -51,6 +52,23 @@ function Rig() {
 
   useEffect(() => invalidate(), [size.width, size.height, invalidate]);
 
+  // Wind and petals move on their own, so the picture is redrawn every frame, but only while it is on screen.
+  useEffect(() => {
+    if (!stageEl) return;
+    let onScreen = true, raf = 0;
+    const io = new IntersectionObserver(([e]) => (onScreen = e.isIntersecting));
+    io.observe(stageEl);
+    const loop = () => {
+      if (onScreen && !document.hidden) invalidate();
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+    };
+  }, [stageEl, invalidate]);
+
   useEffect(() => {
     const el = gl.domElement;
     const move = (e: PointerEvent) => {
@@ -83,8 +101,14 @@ function Rig() {
     };
   }, [gl, invalidate]);
 
-  useFrame(() => {
+  const before = useRef(0);
+  useFrame(({ clock }) => {
     const { progress, ready } = stage.getState();
+    worldTime.value = clock.elapsedTime;
+    // How fast the visitor is travelling, for the speed lines.
+    const speed = Math.min(1, Math.abs(progress - before.current) * 260);
+    before.current = progress;
+    stageEl?.style.setProperty("--speed", speed.toFixed(3));
     // Ease towards where the pointer asks, and keep drawing until the view has settled.
     look.leanX += (look.towardsX - look.leanX) * 0.07;
     look.leanY += (look.towardsY - look.leanY) * 0.07;
@@ -184,6 +208,9 @@ export default function Diorama() {
       <Rig />
       <Lights />
       <Land />
+      <group position={SITE} rotation={[0, VIEW_AZIMUTH, 0]}>
+        <Petals />
+      </group>
       <Compound />
     </Canvas>
   );

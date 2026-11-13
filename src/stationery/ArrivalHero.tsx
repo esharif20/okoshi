@@ -16,7 +16,7 @@ import "./hero.css";
 // The same element stays pinned through the Opening sequence while the Diorama plays behind the words.
 export function ArrivalHero() {
   const contact = site.email ? `mailto:${site.email}` : "#contact";
-  const title = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   // The picture is ready when the Diorama has drawn, or at once where there is no Diorama.
   const ready = useStage((s) => s.detected && (s.edition !== "desktop" || s.ready));
 
@@ -26,15 +26,46 @@ export function ArrivalHero() {
       if (!ready) return;
       const mm = gsap.matchMedia();
       mm.add(MOVING, () => {
+        gsap.from(".hero-person img", { yPercent: 12, opacity: 0, duration: 1.3, ease: "expo.out", delay: 0.2 });
         const split = SplitText.create("h1", { type: "chars", mask: "chars" });
         gsap.from(split.chars, { yPercent: 115, rotate: 6, duration: 1.1, ease: "expo.out", stagger: 0.045, delay: 0.35, onComplete: () => split.revert() });
-        gsap.from("p", { y: 24, opacity: 0, duration: 0.9, ease: "expo.out", delay: 0.95 });
+        gsap.from(".hero-claim", { y: 24, opacity: 0, duration: 0.9, ease: "expo.out", delay: 0.95, clearProps: "opacity,transform" });
       });
     },
-    { scope: title, dependencies: [ready] },
+    { scope: stageRef, dependencies: [ready] },
+  );
+
+  // Depth: he, his name and the landscape each shift by a different amount as the pointer moves.
+  // The links in the top row scramble into place when pointed at.
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(`(pointer: fine) and ${MOVING}`, () => {
+        const px = gsap.quickTo(".hero-person", "x", { duration: 0.9, ease: "power3" });
+        const tx = gsap.quickTo(".hero-title", "x", { duration: 1.2, ease: "power3" });
+        const move = (e: PointerEvent) => {
+          const u = e.clientX / innerWidth - 0.5;
+          px(u * -46);
+          tx(u * 22);
+        };
+        addEventListener("pointermove", move);
+        const links = gsap.utils.toArray<HTMLElement>(".hero-nav a");
+        const over = links.map((a) => {
+          const word = a.textContent ?? "";
+          const fn = () => gsap.to(a, { duration: 0.55, scrambleText: { text: word, chars: "lowerCase", speed: 0.7 } });
+          a.addEventListener("pointerenter", fn);
+          return () => a.removeEventListener("pointerenter", fn);
+        });
+        return () => {
+          removeEventListener("pointermove", move);
+          over.forEach((off) => off());
+        };
+      });
+    },
+    { scope: stageRef },
   );
   return (
-    <div className="hero" data-stage>
+    <div className="hero" data-stage ref={stageRef}>
       {/* The recorded first frame: what phones and reduced-motion visitors see, and what desktop shows until the Diorama draws. */}
       <Still name="arrival" className="hero-poster" eager alt="A painted landscape at dawn: a traveller with a straw hat on his back stands on a path that leads through a red gate towards mountains." />
       <div className="hero-canvas" data-cursor="Drag">
@@ -59,12 +90,24 @@ export function ArrivalHero() {
       <RoomLabels />
       <Story />
 
+      {/* Print: paper grain over the whole picture, a darker edge, speed lines when travelling fast, and the manga panel frame of the Ink beat. */}
+      <div className="hero-vignette" aria-hidden="true" />
+      <div className="hero-speed" aria-hidden="true" />
+      <div className="hero-grain" aria-hidden="true" />
+      <div className="hero-panel" aria-hidden="true" />
       <BeatRail />
 
-      <div className="hero-title" ref={title}>
+      <div className="hero-title">
         <h1>{site.name}</h1>
-        <p>{site.line}</p>
       </div>
+      {/* The man himself, cut out of his own photograph, standing in front of his name and the landscape. */}
+      <div className="hero-person">
+        <img src={`${import.meta.env.BASE_URL}img/eshan.webp`} width={665} height={1500} alt={`${site.name}, smiling, in a T-shirt with a small mountain and the word Japan on it.`} fetchPriority="high" />
+      </div>
+      <p className="hero-claim">
+        <small>Software engineer</small>
+        Firmware, <small>computer</small> vision <small>and</small> AI agents.
+      </p>
     </div>
   );
 }

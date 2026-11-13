@@ -1,47 +1,102 @@
-/* The Roles in full: a ledger of three columns, when, what and what was done. */
-.experience { margin-top: clamp(5rem, 9vw, 9rem); }
-.experience-head { font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem); margin-bottom: clamp(2rem, 4vw, 3.5rem); }
-.experience-head span { display: block; }
-
-.experience-list { display: grid; gap: clamp(3rem, 5vw, 4.5rem); margin: 0; padding: 0; list-style: none; }
-.experience-role {
+.roles {
+  position: relative;
+  overflow: hidden;
+  min-height: 100svh;
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gutter);
-  row-gap: 1rem;
-  align-items: start;
+  grid-template-rows: auto 1fr;
+  background: var(--ink);
+  color: var(--bg);
+  /* Full bleed, whatever the sheet's own margins are. */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding-block: clamp(3rem, 7svh, 5rem) clamp(2.5rem, 6svh, 4rem);
 }
-.experience-when { grid-column: 1 / span 3; display: grid; gap: 0.25rem; }
-.experience-when strong { font: 800 var(--step-lead) / 1.15 var(--font-display); letter-spacing: -0.02em; }
-.experience-when span { color: var(--muted); font-weight: 700; }
-.experience-what { grid-column: 4 / span 4; display: grid; gap: 0.5rem; }
-.experience-what h4 {
+.roles-head { padding-inline: var(--margin); display: flex; align-items: baseline; gap: 2rem; flex-wrap: wrap; }
+.roles-head h3 { font-size: clamp(2.5rem, 6vw, 6.5rem); line-height: 0.95; }
+.roles-head p { font-weight: 700; color: color-mix(in srgb, var(--bg) 72%, transparent); }
+
+.roles-track {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 3.5rem);
+  width: max-content;
   margin: 0;
-  font: 800 var(--step-lead) / 1.15 var(--font-display);
-  letter-spacing: -0.02em;
-  text-wrap: balance;
+  padding: 2rem var(--margin) 2rem;
+  list-style: none;
+  will-change: transform;
 }
-.experience-org { font-weight: 700; }
-.experience-points { grid-column: 8 / -1; display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
-.experience-points li { padding-left: 1.4rem; position: relative; }
-.experience-points li::before {
+.role-card {
+  position: relative;
+  flex: none;
+  width: clamp(22rem, 34vw, 34rem);
+  min-height: min(62svh, 34rem);
+  padding: clamp(1.4rem, 2.2vw, 2.4rem);
+  background: var(--bg);
+  color: #1f3038;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 26px 50px -18px rgb(0 0 0 / 0.55);
+  transition: box-shadow 300ms var(--ease-out);
+}
+/* Screentone in one corner of every plate. */
+.role-card::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 0.62em;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--ink);
+  right: -3rem;
+  top: -3rem;
+  width: 13rem;
+  height: 13rem;
+  background: radial-gradient(circle, #1f3038 1.3px, transparent 1.6px) 0 0 / 7px 7px;
+  mask-image: linear-gradient(225deg, #000 30%, transparent 62%);
+  opacity: 0.5;
+}
+.role-card:hover { box-shadow: 0 40px 70px -20px rgb(0 0 0 / 0.7); }
+.role-year {
+  position: absolute;
+  right: -0.06em;
+  bottom: -0.2em;
+  font: 800 clamp(8rem, 15vw, 15rem) / 0.8 var(--font-display);
+  letter-spacing: -0.05em;
+  color: var(--surface);
+  pointer-events: none;
+}
+.role-card > :not(.role-year) { position: relative; }
+.role-when { font-weight: 700; font-size: var(--step-small); color: #5d6b72; }
+.role-card h4 { margin-top: 0.8rem; font: 800 clamp(1.6rem, 2.3vw, 2.4rem) / 1.02 var(--font-display); letter-spacing: -0.03em; text-wrap: balance; }
+.role-org { margin-top: 0.35rem; font-weight: 700; color: var(--accent); }
+.role-summary { margin-top: 1rem; line-height: 1.45; }
+.role-card ul { margin: 1rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.5rem; font-size: 0.94em; line-height: 1.4; }
+.role-card ul li { padding-left: 1.1rem; position: relative; }
+.role-card ul li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: #1f3038; }
+.role-seal {
+  position: absolute !important;
+  right: 1.2rem;
+  top: 1.2rem;
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: 800 1.05rem / 1 var(--font-display);
+  rotate: 7deg;
+}
+.roles-ink {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: 1.4rem;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--accent);
+  transform-origin: 0 50%;
 }
 
-@media (max-width: 899px) {
-  .experience-when { grid-column: 1 / -1; }
-  .experience-what { grid-column: 1 / span 6; }
-  .experience-points { grid-column: 7 / -1; }
-}
-@media (max-width: 699px) {
-  .experience-role { row-gap: 0.9rem; }
-  .experience-what, .experience-points { grid-column: 1 / -1; }
-  .experience-when { grid-auto-flow: column; justify-content: space-between; align-items: baseline; }
+/* Phones and reduced motion: the same plates, one under another. */
+@media (max-width: 900px), (prefers-reduced-motion: reduce) {
+  .roles { min-height: 0; }
+  .roles-track { flex-direction: column; align-items: stretch; width: auto; }
+  .role-card { width: auto; min-height: 0; }
+  .roles-ink { display: none; }
 }

@@ -19,6 +19,9 @@ export function inFrame(x: number, y: number, z: number): [number, number, numbe
   return [SITE[0] + x * c + z * s, y, SITE[2] - x * s + z * c];
 }
 
+/** Seconds since the Diorama started, for everything that moves on its own: wind, petals. */
+export const worldTime = { value: 0 };
+
 export const landState = {
   uNight: { value: 0 },
 };
@@ -149,7 +152,8 @@ function grass(): THREE.InstancedMesh {
 
   const material = new THREE.MeshLambertMaterial({ color: "#ffffff", side: THREE.DoubleSide });
   material.onBeforeCompile = (shader) => {
-    shader.vertexShader = `attribute vec4 aBlade;\nvarying float vAlong;\nvarying float vTint;\n${shader.vertexShader}`
+    shader.uniforms.uTime = worldTime;
+    shader.vertexShader = `attribute vec4 aBlade;\nuniform float uTime;\nvarying float vAlong;\nvarying float vTint;\n${shader.vertexShader}`
       .replace(
         "#include <beginnormal_vertex>",
         /* glsl */ `
@@ -165,6 +169,10 @@ function grass(): THREE.InstancedMesh {
         vec3 transformed = vec3(position.x * bWide * bCos, bT * aBlade.x, position.x * bWide * bSin);
         float bBend = aBlade.z * pow(bT, 1.6) * aBlade.x;
         transformed.xz += vec2(bSin, -bCos) * bBend;
+        // Wind: gusts cross the field as slow waves, and every blade answers a little differently.
+        vec2 bRoot = vec2(instanceMatrix[3][0], instanceMatrix[3][2]);
+        float bGust = sin(uTime * 1.3 + bRoot.x * 0.12 + bRoot.y * 0.09) * (0.6 + 0.4 * sin(uTime * 0.31 + bRoot.x * 0.02));
+        transformed.xz += vec2(0.84, 0.54) * bGust * 0.11 * pow(bT, 1.5) * aBlade.x * 3.0;
         transformed.y -= abs(bBend) * 0.35 * bT;
         vAlong = bT; vTint = aBlade.w;`,
       );
@@ -366,6 +374,10 @@ function rockMaterial(r: Range): THREE.MeshLambertMaterial {
           float lower = (1.0 - smoothstep(0.1, 0.4, t)) * (1.0 - smoothstep(0.1, 0.4, steep));
           rock = mix(rock, rock * vec3(1.06, 1.05, 0.98), lower * (0.5 + 0.5 * lFbm(vRock.xz * 0.2)));
           rock *= 0.94 + 0.12 * lFbm(vRock.xz * 0.5 + vRock.y * 0.3);
+          // Contour lines, as on a traveller's map: a thin line at every step of height.
+          float level = vRock.y / (uHeight * 0.085);
+          float contour = 1.0 - smoothstep(0.0, fwidth(level) * 1.6, abs(fract(level - 0.5) - 0.5));
+          rock *= 1.0 - contour * 0.16;
           // Snow holds on gentle slopes high up and lies in streaks on the steep ones.
           float line = t + (lFbm(vRock.xz * 0.06) - 0.5) * 0.3;
           float snow = uSnow * smoothstep(0.42, 0.6, line) * (1.0 - smoothstep(0.28, 0.62, steep - lFbm(vRock.xz * 0.25) * 0.25));
