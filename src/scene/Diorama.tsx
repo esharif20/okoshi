@@ -1,192 +1,173 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { poseAt } from "~/scene/fold";
-import { beatProgress, stage } from "~/stage";
-import { FOV, orbitAt, orbitPose, overheadOrbit, type Key } from "./camera";
-import { matrix3d, type Pt } from "./homography";
-import { PLAN, ROOM_RECTS } from "./house/layout";
-import { Roof } from "./house/Roof";
-import { HOUSE, type PanelShape } from "./house/walls";
-import { measureSheet, type SheetMeasure } from "./measure";
-import { makePaper, paperState } from "./paper/material";
-import { Land, landState } from "./world/Land";
-import { Pagoda } from "./world/Pagoda";
+import { stage } from "~/stage";
+import { FOV, orbitAt, orbitPose, type Key, type Orbit } from "./camera";
+import { Compound } from "./build/Compound";
+import { groundHeight, inFrame, Land, landState, SITE, toFrame, VIEW_AZIMUTH } from "./world/Land";
 
-export const PLAN_PAD = 0.4;
 const DEG = Math.PI / 180;
 
-// Where the camera rests once the House stands, and once the whole Plate is in view.
-const HOUSE_VIEW = { target: [4.4, 0.5, 4.3] as [number, number, number], polar: 42 * DEG, azimuth: 30 * DEG, distance: 40 };
-const PAINT_VIEW = { target: [4.6, 0.7, 4.0] as [number, number, number], polar: 50 * DEG, azimuth: 20 * DEG, distance: 44 };
-const PLATE_VIEW = { target: [5.6, 2.9, 3.2] as [number, number, number], polar: 82 * DEG, azimuth: 26 * DEG, distance: 47 };
+// The camera's standpoints through the Opening sequence, aimed at points given in the picture's own frame.
+// Arrival: far back on the path at head height, the whole landscape ahead.
+const ARRIVAL: Orbit = { target: inFrame(0, 5.2, 0), polar: 89.6 * DEG, azimuth: VIEW_AZIMUTH, distance: 150 };
+// Approach: low along the path and through the gate, then up and over the site.
+const NEARING: Orbit = { target: inFrame(0.5, 4.2, 0), polar: 87 * DEG, azimuth: VIEW_AZIMUTH + 2 * DEG, distance: 92 };
+// Over the sheet: high enough to read the plan and look down into the rooms as they fold up.
+const OVER: Orbit = { target: inFrame(1.8, 1.6, 0.4), polar: 50 * DEG, azimuth: VIEW_AZIMUTH + 12 * DEG, distance: 78 };
+// Through Ink and Paint the view drifts round a little and comes down.
+const PAINTED: Orbit = { target: inFrame(2.0, 3.0, 0.2), polar: 62 * DEG, azimuth: VIEW_AZIMUTH + 3 * DEG, distance: 80 };
+// The Plate: level with the buildings, the ranges behind them.
+const PLATE: Orbit = { target: inFrame(2.4, 6.6, 0), polar: 85.5 * DEG, azimuth: VIEW_AZIMUTH, distance: 84 };
 
-const SHADOW = new THREE.ShadowMaterial({ transparent: true, opacity: 0, color: "#1f3038" });
-const smooth01 = (a: number, b: number, x: number) => {
-  const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
-  return u * u * (3 - 2 * u);
-};
+const KEYS: Key[] = [
+  { at: 0.04, orbit: ARRIVAL },
+  { at: 0.2, orbit: NEARING },
+  { at: 0.36, orbit: OVER },
+  { at: 0.88, orbit: PAINTED },
+  { at: 0.985, orbit: PLATE },
+];
 
-function Panel({ shape, children, register, layer = 0 }: { shape: PanelShape; children?: React.ReactNode; register: (id: string, g: THREE.Group) => void; layer?: number }) {
-  const geometry = useMemo(() => {
-    const g = new THREE.PlaneGeometry(shape.length, shape.height);
-    g.translate(shape.length / 2, shape.height / 2, 0); // the hinge runs along the bottom edge
-    return g;
-  }, [shape.length, shape.height]);
-  const material = useMemo(() => makePaper(shape.look, [shape.length, shape.height]), [shape.look, shape.length, shape.height]);
-  return (
-    <group position={[shape.origin[0], shape.origin[1] + (shape.parent ? 0 : 0.02 + layer * 0.006), shape.origin[2]]} rotation={[0, shape.yaw, 0]}>
-      <group ref={(g) => { if (g) register(shape.id, g); }}>
-        <mesh geometry={geometry} material={material} castShadow receiveShadow />
-        {children}
-      </group>
-    </group>
-  );
-}
+// The visitor can look around: the view leans a little towards the pointer, and a drag turns it.
+const look = { leanX: 0, leanY: 0, towardsX: 0, towardsY: 0, turn: 0, towardsTurn: 0, dragging: false, lastX: 0 };
+const MAX_TURN = 0.6;
 
-function Floor({ x, z, w, d, look }: { x: number; z: number; w: number; d: number; look: "floor" | "boards" }) {
-  const material = useMemo(() => makePaper(look, [w, d]), [look, w, d]);
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[x + w / 2, 0.012, z + d / 2]} material={material} receiveShadow renderOrder={2}>
-      <planeGeometry args={[w, d]} />
-    </mesh>
-  );
-}
-
-function House() {
-  const hinges = useRef(new Map<string, THREE.Group>());
-  const register = (id: string, g: THREE.Group) => hinges.current.set(id, g);
-  const roots = HOUSE.shapes.filter((s) => !s.parent);
-  const kids = (id: string) => HOUSE.shapes.filter((s) => s.parent === id);
-
-  useFrame(() => {
-    const progress = stage.getState().progress;
-    // At rest the page is the printed Sheet alone; the flaps print in as the scroll begins.
-    const shown = smooth01(0.015, 0.09, progress);
-    paperState.uShown.value = shown;
-    paperState.uInk.value = beatProgress(progress, "ink");
-    paperState.uPaint.value = beatProgress(progress, "paint");
-    paperState.uNight.value = landState.uNight.value; // Land owns the Day and Night cross-fade
-    SHADOW.opacity = 0.22 * shown;
-    const pose = poseAt(HOUSE.plan, beatProgress(progress, "fold"));
-    hinges.current.forEach((g, id) => {
-      g.rotation.x = pose.get(id) ?? 0;
-    });
-  });
-
-  return (
-    <group>
-      {ROOM_RECTS.filter((r) => r.id !== "garden").map((r) => (
-        <Floor key={r.id} x={r.x} z={r.y} w={r.w} d={r.h} look={r.id === "lookout" ? "boards" : "floor"} />
-      ))}
-      <Roof x={0} z={0} w={7} d={6} wallHeight={1.6} />
-      {roots.map((s, i) => (
-        <Panel key={s.id} shape={s} register={register} layer={i}>
-          {kids(s.id).map((k) => (
-            <Panel key={k.id} shape={k} register={register} />
-          ))}
-        </Panel>
-      ))}
-    </group>
-  );
-}
-
-function Rig({ stageEl }: { stageEl: HTMLElement }) {
-  const { camera, invalidate, size } = useThree();
-  const measure = useRef<SheetMeasure | null>(null);
-  const keys = useRef<Key[]>([]);
-  const sheetEl = useMemo(() => stageEl.querySelector<HTMLElement>("[data-sheet]"), [stageEl]);
-  const corner = useMemo(() => new THREE.Vector3(), []);
-
-  useEffect(() => {
-    const m = measureSheet(stageEl, PLAN.w + PLAN_PAD * 2, PLAN_PAD);
-    measure.current = m;
-    if (m) {
-      const centre: [number, number] = [(m.viewport.w / 2 - m.origin[0]) / m.pxPerUnit, (m.viewport.h / 2 - m.origin[1]) / m.pxPerUnit];
-      keys.current = [
-        { at: 0.04, orbit: overheadOrbit(centre, m.pxPerUnit, m.viewport.h) },
-        { at: 0.45, orbit: HOUSE_VIEW },
-        { at: 0.86, orbit: PAINT_VIEW },
-        { at: 0.98, orbit: PLATE_VIEW },
-      ];
-    }
-    invalidate();
-  }, [stageEl, size.width, size.height, invalidate]);
+function Rig() {
+  const { camera, invalidate, gl, size } = useThree();
+  const stageEl = useMemo(() => gl.domElement.closest<HTMLElement>("[data-stage]"), [gl]);
 
   useEffect(() => stage.subscribe(() => invalidate()), [invalidate]);
 
+  // The picture is composed for a wide screen. On a tall one the lens opens up so the same width is in view.
+  useEffect(() => {
+    const lens = camera as THREE.PerspectiveCamera;
+    lens.fov = FOV * Math.min(2.4, Math.max(1, 1.45 / (size.width / size.height)));
+    lens.updateProjectionMatrix();
+    invalidate();
+  }, [camera, size.width, size.height, invalidate]);
+
+  useEffect(() => {
+    const el = gl.domElement;
+    const move = (e: PointerEvent) => {
+      look.towardsX = e.clientX / innerWidth - 0.5;
+      look.towardsY = e.clientY / innerHeight - 0.5;
+      if (look.dragging) {
+        look.towardsTurn = Math.max(-MAX_TURN, Math.min(MAX_TURN, look.towardsTurn - (e.clientX - look.lastX) * 0.0035));
+        look.lastX = e.clientX;
+      }
+      invalidate();
+    };
+    const down = (e: PointerEvent) => {
+      look.dragging = true;
+      look.lastX = e.clientX;
+      el.style.cursor = "grabbing";
+    };
+    const up = () => {
+      look.dragging = false;
+      el.style.cursor = "grab";
+    };
+    el.style.cursor = "grab";
+    el.style.touchAction = "pan-y";
+    el.addEventListener("pointerdown", down);
+    addEventListener("pointermove", move);
+    addEventListener("pointerup", up);
+    return () => {
+      el.removeEventListener("pointerdown", down);
+      removeEventListener("pointermove", move);
+      removeEventListener("pointerup", up);
+    };
+  }, [gl, invalidate]);
+
   useFrame(() => {
-    const m = measure.current;
-    if (!m || !keys.current.length) return;
-    const progress = stage.getState().progress;
-    const pose = orbitPose(orbitAt(keys.current, progress));
+    const { progress, ready } = stage.getState();
+    // Ease towards where the pointer asks, and keep drawing until the view has settled.
+    look.leanX += (look.towardsX - look.leanX) * 0.07;
+    look.leanY += (look.towardsY - look.leanY) * 0.07;
+    look.turn += (look.towardsTurn - look.turn) * 0.09;
+    const unsettled = Math.abs(look.towardsX - look.leanX) + Math.abs(look.towardsY - look.leanY) + Math.abs(look.towardsTurn - look.turn);
+    if (unsettled > 0.0006) invalidate();
+
+    const orbit = orbitAt(KEYS, progress);
+    // Far from the site a small turn is a long walk, so the turn is held back until the camera is close.
+    const near = 1 - Math.min(1, Math.max(0, (orbit.distance - 90) / 60));
+    const pose = orbitPose({
+      ...orbit,
+      azimuth: orbit.azimuth + look.turn * (0.25 + 0.75 * near) + look.leanX * 0.05,
+      polar: Math.min(89.8 * DEG, orbit.polar - look.leanY * 0.012),
+    });
+    // The camera stays above the ground wherever it is taken.
+    const [fx, fz] = toFrame(pose.position[0], pose.position[2]);
+    pose.position[1] = Math.max(pose.position[1], groundHeight(fx, fz) + 2.4);
     camera.position.set(...pose.position);
     camera.up.set(...pose.up);
     camera.lookAt(...pose.target);
     camera.updateMatrixWorld();
-
-    stageEl.style.setProperty("--progress", progress.toFixed(4));
-    // What the top row sits on: the slate table at rest, the moving Sheet, or the painted plain.
-    const phase = progress < 0.03 ? "rest" : beatProgress(progress, "paint") > 0.75 ? "plate" : "moving";
-    if (stageEl.dataset.phase !== phase) stageEl.dataset.phase = phase;
-    if (!sheetEl) return;
-    // Once the plain has covered it, the Sheet has done its work.
-    sheetEl.style.visibility = beatProgress(progress, "paint") >= 0.6 ? "hidden" : "";
-    if (progress <= keys.current[0].at) {
-      sheetEl.style.transform = "";
-      return;
-    }
-    // Project the Sheet's corners and bend the DOM Sheet onto them.
-    const s = m.sheet;
-    const quad = (
-      [
-        [s.x, s.y],
-        [s.x + s.w, s.y],
-        [s.x + s.w, s.y + s.h],
-        [s.x, s.y + s.h],
-      ] as Pt[]
-    ).map(([px, py]) => {
-      corner.set((px - m.origin[0]) / m.pxPerUnit, 0, (py - m.origin[1]) / m.pxPerUnit).project(camera);
-      return [((corner.x + 1) / 2) * m.viewport.w - s.x, ((1 - corner.y) / 2) * m.viewport.h - s.y] as Pt;
-    }) as [Pt, Pt, Pt, Pt];
-    const css = matrix3d(s.w, s.h, quad);
-    if (css) sheetEl.style.transform = css;
+    stageEl?.style.setProperty("--progress", progress.toFixed(4));
+    if (!ready) stage.setState({ ready: true });
   });
   return null;
 }
 
-export default function Diorama({ stageEl }: { stageEl: HTMLElement }) {
+const DAY = { sky: new THREE.Color("#fff3ea"), ground: new THREE.Color("#cdbfb4"), sun: new THREE.Color("#fff0df") };
+const NIGHT = { sky: new THREE.Color("#7f93b8"), ground: new THREE.Color("#2c3440"), sun: new THREE.Color("#a9bfe6") };
+
+// Dawn: a warm, low key light from the left and a pale sky to fill the shadows. At Night both sink and cool, as moonlight.
+function Lights() {
+  const hemi = useRef<THREE.HemisphereLight>(null);
+  const sun = useRef<THREE.DirectionalLight>(null);
+  useFrame(() => {
+    const n = landState.uNight.value;
+    if (hemi.current) {
+      hemi.current.color.copy(DAY.sky).lerp(NIGHT.sky, n);
+      hemi.current.groundColor.copy(DAY.ground).lerp(NIGHT.ground, n);
+      hemi.current.intensity = 1.0 - 0.45 * n;
+    }
+    if (sun.current) {
+      sun.current.color.copy(DAY.sun).lerp(NIGHT.sun, n);
+      sun.current.intensity = 2.7 - 2.1 * n;
+    }
+  });
+  return (
+    <>
+      <hemisphereLight ref={hemi} args={["#fff3ea", "#cdbfb4", 1.0]} />
+      <directionalLight
+        ref={sun}
+        position={inFrame(-70, 46, 52)}
+        target-position={SITE}
+        color="#fff0df"
+        intensity={2.7}
+        castShadow
+        shadow-mapSize={[3072, 3072]}
+        shadow-camera-left={-36}
+        shadow-camera-right={40}
+        shadow-camera-top={30}
+        shadow-camera-bottom={-30}
+        shadow-camera-near={10}
+        shadow-camera-far={220}
+        shadow-bias={-0.0006}
+        shadow-normalBias={0.03}
+      />
+    </>
+  );
+}
+
+export default function Diorama() {
   return (
     <Canvas
       frameloop="demand"
       flat
       dpr={[1, 2]}
-      shadows
-      gl={{ alpha: true, antialias: true }}
-      onCreated={({ gl }) => { gl.setClearAlpha(0); paperState.uDotScale.value = 4 * gl.getPixelRatio(); }}
-      camera={{ fov: FOV, near: 1, far: 600 }}
+      shadows={{ type: THREE.PCFSoftShadowMap }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
+      camera={{ fov: FOV, near: 2, far: 1400 }}
+      onCreated={({ gl }) => {
+        gl.localClippingEnabled = true;
+      }}
     >
-      <Rig stageEl={stageEl} />
-      <hemisphereLight args={["#ffffff", "#c9d3d8", 1.6]} />
-      <directionalLight
-        position={[-9, 16, 7]}
-        intensity={1.5}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-14}
-        shadow-camera-right={18}
-        shadow-camera-top={16}
-        shadow-camera-bottom={-16}
-        shadow-bias={-0.0006}
-        shadow-normalBias={0.06}
-      />
+      <Rig />
+      <Lights />
       <Land />
-      <House />
-      <Pagoda position={[8.5, 0, 1.55]} scale={0.72} />
-      {/* Catches shadows only, so they fall on the DOM Sheet beneath the canvas. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[5, 0, 2]} material={SHADOW} receiveShadow>
-        <planeGeometry args={[60, 60]} />
-      </mesh>
+      <Compound />
     </Canvas>
   );
 }

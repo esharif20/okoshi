@@ -22,7 +22,7 @@ export function readDevice(): DeviceFacts {
 // Sets the Edition straight away, then refines desktop quality once the GPU is known.
 export async function detectEdition(): Promise<void> {
   const facts = readDevice();
-  stage.setState(chooseEdition(facts));
+  stage.setState({ ...chooseEdition(facts), detected: true });
   if (stage.getState().edition !== "desktop") return;
   try {
     const { getGPUTier } = await import("detect-gpu");

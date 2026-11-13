@@ -20,7 +20,7 @@ A static website: a home page and one Manga page per Project. There is no server
 | Styling | Tailwind 4, tokens from `DESIGN.md` as CSS variables | One source for colour and type |
 | Small UI pieces | React Bits, copied in, DOM-only components | No second WebGL canvas |
 | Tests | Vitest, TypeScript checks, the taste skill's inspector | See "Checks" |
-| Media tools | Playwright, FFmpeg, PyMuPDF | Clips for the Phone edition; the CV with the phone number removed |
+| Media tools | Playwright, cwebp, pdf tooling | Stills for the Phone edition; the CV with the phone number removed |
 
 Not used: Next.js, Theatre.js, Rive, Spline, drei ScrollControls, GSAP ScrollSmoother, any AI 3D generator.
 
@@ -34,19 +34,18 @@ src/
   stage/        where the visitor is                (one store)
   scene/        the Diorama                         (all three.js lives here)
     fold/       the fold-up mechanism               (pure maths, no WebGL)
-    house/      the House and its Rooms as a plan   (data)
-    paper/      the paper material: Ink, Paint, Lift, Screentone
-    world/      land, sky, Pagoda, Day and Night
-    figures/    Traveller, Karakuri, Cut-outs
-  stationery/   the home page sections              (DOM)
+    camera.ts   the camera's path                   (pure maths)
+    world/      sky, mountain ranges, ground, grass, stones, Day and Night
+    build/      House, Pagoda, garden, Traveller; the painted material; textures drawn in code
+  stationery/   the first screen and the home page sections   (DOM)
   manga/        the Manga page                      (DOM)
-  ui/           Seal button, brushed link, toned image, pointer and loupe
-  motion/       smooth scroll, entrances, cuts, reduced motion
+  strip/        Stills and the strip shown by the Phone and Still editions
+  ui/           Seal button, portrait, clock, loader
+  motion/       smooth scroll, entrances, reduced motion
   edition/      which Edition this visitor gets
-  strip/        the Phone edition
   routes/       home, work/:slug
 tools/
-  capture/      records Clips and stills from the Desktop edition
+  capture/      records Stills from the Desktop edition
   cv/           makes the public CV
 ```
 
@@ -85,16 +84,19 @@ A schema test fails the build if a Role or Project names a Room or Layer that do
 The one record of where the visitor is. The page writes to it; the Diorama reads from it. Nothing else connects the two.
 
 ```ts
-type Beat    = 'sheet' | 'fold' | 'ink' | 'paint' | 'plate'
+type Beat    = 'arrival' | 'approach' | 'fold' | 'ink' | 'paint' | 'plate'
 type Edition = 'desktop' | 'phone' | 'still'
 
 type StageState = {
   progress: number            // 0..1 through the Opening sequence
   hoveredRoom: RoomId | null
+  hoveredLayer: LayerId | null
   openRoom: RoomId | null
   night: boolean
   edition: Edition
   quality: 'high' | 'low'     // within the Desktop edition
+  ready: boolean              // the Diorama has drawn its first frame
+  detected: boolean           // the Edition has been chosen in the browser
 }
 
 export const stage                       // zustand store; stage.getState() in the render loop
@@ -103,7 +105,7 @@ export function beatAt(progress: number): Beat
 export function beatProgress(progress: number, beat: Beat): number   // 0..1 within that Beat
 ```
 
-Beat ranges: Sheet 0 to 0.10, Fold 0.10 to 0.45, Ink 0.45 to 0.65, Paint 0.65 to 0.90, Plate 0.90 to 1.
+Beat ranges: Arrival 0 to 0.08, Approach 0.08 to 0.36, Fold 0.36 to 0.60, Ink 0.60 to 0.72, Paint 0.72 to 0.88, Plate 0.88 to 1.
 
 ### scene
 
@@ -124,9 +126,13 @@ export function poseAt(plan: FoldPlan, t: number): Map<string, number>   // angl
 
 Rules it guarantees: at 0 every panel lies flat; at 1 every panel stands; a panel never starts before its parent; angles change smoothly.
 
-**scene/house** holds the House as a `FoldPlan` plus the outline of each Room. **scene/paper** is one material used by every panel, with three controls: how far Ink has run, how far Paint has soaked, and how far a Room is Lifted. **scene/world** draws the land, sky and Pagoda and switches Day and Night by swapping a set of colours.
+**scene/world** draws the landscape. The ground and the three mountain ranges are real geometry shaped by noise and lit by one sun; the grass is one instanced blade shaped in the vertex shader; the sky is one shader. Day and Night cross-fade.
 
-Rendering rules: the canvas redraws only when the Stage changes or something is moving; nothing in the render loop goes through React state; one canvas for the whole site.
+**scene/build** holds what is built. `painted()` returns the one material every built surface uses: bare paper, then Ink (taken from the edges and dark parts of the surface's own texture), then Paint, with a Lift around whatever the pointer is over. Every texture (stone, timber, plaster, tiles, wall elevations, the Plan) is drawn on a canvas when the Diorama loads, so no image files are shipped for it. `Hall.tsx` and `Pagoda.tsx` each hold a `FoldPlan` and turn its angles into hinge rotations.
+
+The Diorama tells the page where each Room is on screen through CSS variables on the stage element (`--pin-<room>-x`, `--pin-<room>-y`, and `--progress`), so labels and story text are real DOM text set over the canvas.
+
+Rendering rules: the canvas redraws only when the Stage changes or something is moving; nothing in the render loop goes through React state; one canvas for the whole site; the camera is kept above the ground.
 
 ### stationery, manga, ui
 
@@ -142,7 +148,7 @@ Decides the Edition once, at load: `still` if reduced motion is requested; `phon
 
 ### strip
 
-The Phone edition's layout: the same Stationery in one column, with each Clip loaded as its part nears the screen.
+The Phone and Still editions' Opening sequence: `<Still>` picks the wide or tall recording for the screen, and `<StillStory>` sets the five Stills after the first screen, each with its line.
 
 ## Data flow
 
@@ -152,9 +158,9 @@ pointer on a Room -> scene -> stage.hoveredRoom -> stationery (Facts beside the 
 content -> stationery, manga, scene (Room names), strip
 ```
 
-## Editions and Clips
+## Editions and Stills
 
-`tools/capture` opens the built Desktop edition in a real browser, steps the Stage through the Opening sequence and each Room at a portrait size, and saves frames. FFmpeg turns them into Clips and poster stills in `public/clips/`. The Phone and Still editions use only those files, so they always show the same Diorama as the Desktop edition. The capture is run by hand before a release and its output is committed.
+`tools/capture` (`npm run capture`, with the preview server running) opens the built Desktop edition in a real browser, steps the Stage through the Opening sequence at a wide and a tall size, and saves one Still per Beat to `public/poster/` as WebP. The Phone and Still editions show those Stills as a vertical strip with the same lines of text, and never load three.js. The first Still is also the poster under the canvas until the Diorama has drawn. The capture is run by hand after the Diorama changes and its output is committed.
 
 ## Budgets
 
@@ -164,7 +170,7 @@ content -> stationery, manga, scene (Room names), strip
 | JavaScript, Desktop edition | about 500 KB compressed |
 | JavaScript, Phone and Still editions | under 150 KB compressed; no three.js loaded |
 | Diorama | under 300,000 triangles and 60 draw calls at high quality |
-| Clips, Phone edition | each under 1.5 MB; loaded only near the screen |
+| Stills, Phone edition | about 1.1 MB for all twelve; each loaded only near the screen |
 
 These are targets to measure against, not yet measured.
 
@@ -187,5 +193,5 @@ The public CV is generated by `tools/cv` from the private original, with the pho
 1. **A static site, prerendered.** A portfolio has no need of a server, and static files are free to host and hard to break.
 2. **The page and the Diorama meet only at the Stage.** Either side can be rebuilt or tested without the other, and the Phone edition can leave the Diorama out altogether.
 3. **The fold-up mechanism is plain maths, separate from drawing.** It is the part most likely to be wrong and the easiest to test once separated.
-4. **The Phone edition plays recordings of the Desktop edition.** A phone gets the same picture without the cost of drawing it, and the two cannot drift apart.
-5. **The House is made of flat and bent panels.** It suits the paper idea and keeps the Diorama light.
+4. **The Phone edition shows recordings of the Desktop edition.** A phone gets the same picture without the cost of drawing it, and the two cannot drift apart.
+5. **Every Diorama texture is drawn in code.** No image generator or licensed asset is needed, and the Ink drawing is derived from the same texture as the Paint, so the two always agree.

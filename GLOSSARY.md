@@ -4,43 +4,49 @@ The words this project uses, and what each means. One meaning per word.
 
 ## The picture
 
-**Sheet**: the sheet of paper the whole site is printed on. The first screen shows it lying on a table.
+**Diorama**: the live 3D picture: the landscape, the House, the Pagoda, the gate and the Traveller.
 
-**Diorama**: the paper model that stands up from the Sheet: the House, the Pagoda, the Garden, the Traveller and the land around them.
+**Sheet**: the sheet of paper lying in the court, from which the House and the Pagoda fold up.
 
-**House**: a samurai-era residence shown with its roof off, so the visitor looks down into its Rooms. The main subject of the Diorama.
+**Plan**: the House printed flat on the Sheet, with every Room outlined and floored.
 
-**Room**: one part of the House that stands for one part of Eshan's work or life. There are six: Entrance, Workshop, Study, Lookout, Great Hall, Garden.
+**House**: a samurai-era residence of four Rooms under one roof, with a veranda. It folds up from the Plan and stays open at the front and top, so its Rooms can be seen, until the Plate closes it.
 
-**Pagoda**: a five-storey tower behind the House. It stands for the range of the work, from hardware to agents.
+**Room**: one part of the House that stands for one part of Eshan's work or life. There are six: Entrance, Workshop, Study, Great Hall, Lookout (the veranda) and Garden (the court around the Pagoda).
+
+**Pagoda**: a five-storey tower beside the House. It stands for the range of the work, from hardware to agents.
 
 **Layer**: one storey of the Pagoda and the kind of work it stands for. There are five: Firmware, Languages, Services, Vision, Agents.
 
+**Flap**: one hinged piece of paper that folds up from the Sheet: a wall, or a side of a stone footing.
+
 **Traveller**: the figure seen from behind on the first screen, with a straw hat hanging on his back. He stands for Eshan arriving.
 
-**Karakuri**: a small clockwork figure on wheels, after the tea-carrying automata of Edo Japan. Karakuri move through the Great Hall and stand for the AI agents Eshan builds.
-
-**Cut-out**: a flat paper figure or object standing upright in the Diorama, such as the Traveller, a football or a desk.
+**Gate**: the red gate on the path. With the Seal button it is the only red in the picture.
 
 **Plate**: the finished, painted Diorama seen as a still picture.
 
 ## How the picture arrives
 
-**Opening sequence**: the scroll-driven passage from the flat Sheet to the Plate. It has five Beats.
+**Opening sequence**: the scroll-driven passage from the first view of the landscape to the Plate. It has six Beats.
 
-**Beat**: one stage of the Opening sequence. In order: Sheet, Fold, Ink, Paint, Plate.
+**Beat**: one stage of the Opening sequence. In order: Arrival, Approach, Fold, Ink, Paint, Plate.
 
-**Fold**: the Beat in which the paper walls lift from the Sheet on their hinges.
+**Arrival**: the Beat that shows the whole landscape, with the name in the sky.
 
-**Ink**: the Beat in which line drawing runs over the white paper. Also the drawn state of any part of the Diorama.
+**Approach**: the Beat in which the view travels up the path, through the Gate, and rises over the Sheet.
 
-**Paint**: the Beat in which colour soaks into the paper. Also the coloured state of any part of the Diorama.
+**Fold**: the Beat in which the Flaps lift from the Sheet on their hinges and the Pagoda rises storey by storey.
 
-**Lift**: what happens when the visitor points at a Room: its Paint draws back to Ink and the Room's Facts are shown.
+**Ink**: the Beat in which line drawing and Screentone climb the bare paper. Also the drawn state of any part of the Diorama.
 
-**Screentone**: shading made of printed dots, as in manga. It is the one effect reused across the site: on photographs, on the loader and on cuts between sections.
+**Paint**: the Beat in which colour lands in patches and spreads like a wash. Also the coloured state of any part of the Diorama.
 
-**Day** and **Night**: the two lightings of the Diorama. By default the site shows whichever it currently is in London.
+**Lift**: what happens when the visitor points at a Room or a Layer: its Paint draws back to Ink and its Facts are shown.
+
+**Screentone**: shading made of printed dots, as in manga. It is the one effect reused across the site.
+
+**Day** and **Night**: the two lightings of the Diorama. The site opens in Day; Night is the visitor's choice.
 
 ## The pages
 
@@ -82,8 +88,8 @@ The words this project uses, and what each means. One meaning per word.
 
 **Desktop edition**: the Diorama drawn live, responding to scroll and pointer. For laptops and desktops.
 
-**Phone edition**: a vertical strip of the same Stationery, in which the Diorama appears as clips made in advance.
+**Phone edition**: a vertical strip in which the Opening sequence appears as Stills, each with its line.
 
-**Still edition**: the site without movement, for visitors who have asked their device to reduce motion. The Diorama appears as stills.
+**Still edition**: the same strip, for visitors who have asked their device to reduce motion, and for browsers without WebGL.
 
-**Clip**: a short recording of the Diorama, made in advance from the Desktop edition for the Phone edition.
+**Still**: a recorded picture of the Diorama at one Beat, made in advance from the Desktop edition in a wide and a tall shape.

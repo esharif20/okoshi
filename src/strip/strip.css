@@ -1,0 +1,25 @@
+.still-story {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--ink);
+}
+.still-story li { position: relative; }
+.still-story picture, .still-story img { display: block; width: 100%; height: auto; }
+/* Thick gutters between stills, as between the panels of a manga page. */
+.still-story li + li { border-top: 10px solid var(--ink); }
+.still-story p {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+  bottom: clamp(1.25rem, 5vw, 3rem);
+  max-width: 16ch;
+  padding: 0.7rem 0.9rem 0.8rem;
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 4px;
+  width: fit-content;
+  font: 800 clamp(1.5rem, 6.4vw, 3rem) / 1.05 var(--font-display);
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}

@@ -2,7 +2,9 @@ import { useEffect } from "react";
 import { site } from "~/content";
 import { detectEdition } from "~/edition";
 import { SmoothScroll } from "~/motion";
-import { SheetHero } from "~/stationery/SheetHero";
+import { ArrivalHero } from "~/stationery/ArrivalHero";
+import { StillStory } from "~/strip/StillStory";
+import { Loader } from "~/ui/Loader";
 import { useStage } from "~/stage";
 
 export function meta() {
@@ -16,9 +18,11 @@ export default function Home() {
   const edition = useStage((s) => s.edition);
   return (
     <SmoothScroll>
+      <Loader />
       <main>
         <section id="opening" aria-label="Introduction" data-edition={edition}>
-          <SheetHero />
+          <ArrivalHero />
+          {edition !== "desktop" && <StillStory />}
         </section>
       </main>
     </SmoothScroll>
