@@ -5,7 +5,6 @@ import { BrushLink } from "~/ui/BrushLink";
 import { SealButton } from "~/ui/SealButton";
 import "./visitcard.css";
 
-const img = (name: string) => `${import.meta.env.BASE_URL}img/${name}`;
 
 // The Visit card: the contact details on one solid card, set on a print of travellers on the road.
 export function VisitCard() {
@@ -30,15 +29,12 @@ export function VisitCard() {
     <section id="contact" className="visit" aria-labelledby="contact-heading" ref={ref} data-entrance>
       <figure className="visit-print">
         <img
-          src={img("shono-2400.webp")}
-          srcSet={`${img("shono-1400.webp")} 1400w, ${img("shono-2400.webp")} 2400w`}
-          sizes="(max-width: 699px) 250vw, 100vw"
-          width={2400}
-          height={1499}
+          src={`${import.meta.env.BASE_URL}poster/plate-wide.webp`}
+          width={1600}
+          height={1000}
           loading="lazy"
-          alt="Woodblock print: travellers in straw hats and capes hurry up and down a steep road in driving rain, past bamboo bent by the wind."
+          alt="The finished house and five-storey pagoda in a painted landscape at dawn, with mountains behind."
         />
-        <figcaption>Utagawa Hiroshige, Driving Rain at Shōno, about 1833.</figcaption>
       </figure>
 
       <div className="visit-card" data-in="sheet">

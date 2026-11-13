@@ -47,8 +47,8 @@ export function Postcard() {
         </div>
 
         <p className="postcard-imprint">
-          {site.name}. The prints are by Utagawa Hiroshige and in the public domain: Driving Rain at Shōno, Cleveland Museum of Art, and
-          Pagoda of Zōjōji Temple, Akabane, Cooper Hewitt, Smithsonian Design Museum.
+          {site.name}. The print is by Utagawa Hiroshige and in the public domain: Pagoda of Zōjōji Temple, Akabane, Cooper Hewitt,
+          Smithsonian Design Museum.
         </p>
       </div>
     </footer>
