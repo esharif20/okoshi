@@ -120,7 +120,7 @@ export const roles: Role[] = [
     start: "2025-06",
     end: "2025-08",
     summary:
-      "A camera app that proves a photo has not been changed since it was taken, built end to end and deployed on a client's own servers.",
+      "A camera app that proves a photo has not been changed since it was taken, built end to end and deployed on PA's own air-gapped servers.",
     points: [
       "Built a React Native capture app with a FastAPI backend on a Raspberry Pi. Each image is signed with C2PA at the moment of capture.",
       "Designed tamper detection that re-derives an image's hashes and compares them with its C2PA manifest, backed by Lab colour watermarks.",
@@ -196,7 +196,7 @@ export const roles: Role[] = [
     summary: "Code that keeps clinical trial data consistent across several regulated trials at once.",
     points: [
       "Wrote C# functions and automated electronic data capture workflows across concurrent trials.",
-      "Connected the capture systems to clinical databases so discrepancies were caught automatically, cutting manual reconciliation.",
+      "Connected the capture systems to clinical databases and caught discrepancies between them, cutting manual reconciliation.",
     ],
     room: "entrance",
   },
@@ -230,7 +230,7 @@ export const projects: Project[] = [
       {
         kind: "result",
         heading: "Fewer invented numbers",
-        text: "Tracking reached 0.916 IDF1. Event macro F1 rose from 0.516 to 0.647. Linear probes on Qwen2-VL-7B showed it read statistics better from text than from charts, and switching inputs raised grounding from 48.7% to 70.2%.",
+        text: "Tracking reached 0.916 IDF1. Event macro F1 rose from 0.516 to 0.647. Linear probes on Qwen2-VL-7B compared text inputs with chart inputs, to stop invented statistics. Grounding rose from 48.7% to 70.2%.",
         figure: { value: "70.2%", measures: "of stated statistics grounded in the data" },
       },
     ],
@@ -263,7 +263,7 @@ export const projects: Project[] = [
       },
       {
         kind: "result",
-        heading: "Loss that optical imagery missed",
+        heading: "Forest loss, found by radar",
         text: "The system flagged 6,545 ha of forest loss and won the hardest of the challenge tracks, against 25 teams.",
         figure: { value: "6,545 ha", measures: "flagged" },
       },
@@ -289,7 +289,7 @@ export const projects: Project[] = [
       },
       {
         kind: "approach",
-        heading: "Every stage by hand",
+        heading: "Every stage, source to binary",
         text: "A lexer and parser build a full syntax tree. Semantic analysis checks it against scoped symbol tables. Code generation emits LLVM IR for expressions and control flow, and llc and clang link it into x86-64 binaries.",
       },
       {
@@ -310,9 +310,9 @@ export const projects: Project[] = [
     summary: "A team of AI coding agents that plans and builds software faster than one model working alone.",
     stack: ["Claude Code", "Herdr", "JavaScript", "Shell", "git worktrees"],
     figures: [
-      { value: "−36% to −61%", measures: "wall time against one Opus session" },
-      { value: "15%", measures: "hard cap on extra cost" },
-      { value: "3", measures: "benchmarks beaten on speed, quality and cost" },
+      { value: "−36% to −61%", measures: "wall time against one Opus session, on three benchmarks" },
+      { value: "3 of 3", measures: "benchmarks with hidden-test scores equal to or above the solo run" },
+      { value: "−24% to +8%", measures: "cost against the solo run" },
     ],
     panels: [
       {
@@ -323,13 +323,12 @@ export const projects: Project[] = [
       {
         kind: "approach",
         heading: "A Lead, lanes and checks",
-        text: "A Lead plans the work into lanes that never touch the same files. Builders work in their own git worktrees. Scripts run the tests and merge by exact commit, and a reviewer reads the riskiest changes. The build log is public.",
-        figure: { value: "15%", measures: "most extra cost allowed over one agent" },
+        text: "A Lead plans the work into lanes that never touch the same files. Builders work in their own git worktrees. Scripts run the tests and merge by exact commit, and a reviewer reads the riskiest changes. One rule was set before any run: the team may cost at most 15% more than one agent. The build log is public.",
       },
       {
         kind: "result",
         heading: "Faster at the same quality",
-        text: "On three benchmarks the team finished 36% to 61% sooner than one Opus session, passed the same hidden tests or more, and stayed inside the cost cap.",
+        text: "On three benchmarks the team finished 36% to 61% sooner than one Opus session. It passed as many hidden tests or more each time. Cost ranged from 24% less to 8% more, inside the cap.",
         figure: { value: "−61%", measures: "wall time on the best benchmark" },
       },
     ],
@@ -345,8 +344,8 @@ export const projects: Project[] = [
     stack: ["Python", "FastAPI", "TypeScript", "React", "SQLCipher", "Ollama", "GSAP"],
     figures: [
       { value: "8 s → <300 ms", measures: "to load the monthly summary" },
-      { value: "29", measures: "merged pull requests" },
-      { value: "0", measures: "figures written by the model" },
+      { value: "150+", measures: "merged pull requests" },
+      { value: "6", measures: "fictional households in the public demo" },
     ],
     panels: [
       {
@@ -362,7 +361,7 @@ export const projects: Project[] = [
       {
         kind: "result",
         heading: "Fast, and the numbers add up",
-        text: "The monthly summary went from 8 seconds to under 300 ms. Every figure in an answer comes from the ledger, and the public demo runs on synthetic households.",
+        text: "The monthly summary went from 8 seconds to under 300 ms. Every figure in an answer comes from the ledger, and the public demo runs on six fictional households.",
         figure: { value: "<300 ms", measures: "monthly summary, down from 8 s" },
       },
     ],

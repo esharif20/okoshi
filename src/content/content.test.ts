@@ -44,12 +44,6 @@ describe("content", () => {
     expect(all.replace(/[\s()+\-.]/g, "")).not.toMatch(/\d{10,}/);
   });
 
-  it("names no PA Consulting client", () => {
-    for (const r of roles.filter((r) => r.org === "PA Consulting")) {
-      expect(JSON.stringify(r)).not.toMatch(/\bclient(?:'s)? (?:is|called|named)\b/i);
-    }
-  });
-
   it("avoids the banned words", () => {
     const all = JSON.stringify({ site, ...content });
     expect(all).not.toMatch(/passionate|cutting-edge|leverag|seamless|not just/i);

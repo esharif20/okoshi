@@ -2,29 +2,54 @@
 
 Every sentence the site says, taken from `src/content/index.ts`, for Eshan's approval. Nothing here is live until it is approved.
 
-Sources: the CV, two LinkedIn screenshots and the public GitHub repos. None of them is stored in this repo.
+Sources: the CV, two LinkedIn screenshots and the public GitHub repos. The CV and screenshots are not stored in this repo. A sentence marked *Sample* says something no source states. It is a placeholder until approved or replaced.
 
 ## For approval
 
 Each point below needs a yes, a no or a correction.
 
 1. **PA Consulting title.** The CV says "Software Engineer, Software and Controls". LinkedIn says "Software & Controls System Engineer". The site uses the CV title.
-2. **Roles only on LinkedIn.** Residential Community Assistant (University of Warwick, Sep 2025 to Jul 2026) and Research Assistant, NLP and Synthetic Data (URSS, Jul 2024 to Oct 2024) are not on the CV. Both are included. The URSS dates overlap the Jazz Pharmaceuticals internship (Jul to Sep 2024).
+2. **Roles only on LinkedIn.** Residential Community Assistant (University of Warwick, Sep 2025 to Jul 2026) and Research Assistant, NLP and Synthetic Data (URSS, Jul 2024 to Oct 2024) are not on the CV. Both are included. The URSS dates overlap the Jazz Pharmaceuticals internship (Jul to Sep 2024). The LinkedIn text for both was cut off in the screenshot, so their last points paraphrase what was visible.
 3. **TIA Centre title.** The CV says "Research Intern, Applied AI in Medical Imaging". LinkedIn says "Summer Research Intern - Computational Pathology". The site uses the CV title.
 4. **Medical AI society name.** The CV says "Warwick Medical AI Society". LinkedIn says "Warwick Medical AI and Innovation Society". The site uses the CV name.
 5. **Mini C parser.** The CV says an LALR(1) parser. The repo README describes a predictive recursive descent parser. The site says only "a lexer and parser" until this is settled.
 6. **Deforestation repo.** `esharif20/Treefera` has no README or code, so the Project shows no repo link.
 7. **Finance Agent demo.** https://finance-agent-demo-chi.vercel.app, taken from the repo's merged pull requests. It answered with HTTP 200 on 2026-11-13.
-8. **Room meanings.** The glossary names the six Rooms but not what each stands for. The "Stands for" lines below are a first proposal.
-9. **Sentences that go beyond the sources.** The problem Panels add a sentence of context that the CV does not state. They are marked *sample* below the Project.
+8. **Room meanings.** The glossary names the six Rooms but not what each stands for. Every "Stands for" line is a sample.
+9. **Sample sentences.** Five problem Panels add context that no source states. Each is marked *Sample* where it appears and listed again under Samples.
 10. **Email.** `site.email` is the address printed on the CV.
+11. **City.** The site says "London" and "Based in London". The CV header gives no city and the current Role is in Cambridge. The source is the LinkedIn header, "London Area, United Kingdom".
+12. **Client names.** No client of PA Consulting is named, and no test can know the names. Please read the two PA Consulting Roles with that in mind.
+13. **Software Factory numbers.** They come from the project's own README, not the CV. See Sources for figures.
+14. **Finance Agent numbers.** They come from the repo, not the CV. See Sources for figures.
+15. **Role summaries.** Each Role's one-line summary is a paraphrase of its CV bullets, not a quotation.
 
-No phone number appears anywhere on the site. Clients of PA Consulting are not named.
+No phone number appears anywhere on the site.
+
+## Sources for figures
+
+Every number on the site, and where it comes from.
+
+| Figure | Where it appears | Source |
+|---|---|---|
+| 0.916 IDF1, 24 FPS, macro F1 0.516 to 0.647, grounding 48.7% to 70.2%, 58-question QA | Football Intelligence, Lookout | CV, Multimodal Football Intelligence |
+| 6,545 ha, 100,000 ha, 8 years, 25 teams | Deforestation Detection, Lookout | CV, Cloud-Penetrating Deforestation Detection |
+| 20% less IR, 120+ tests | Mini C Compiler | CV, Mini C Compiler |
+| 60+ students, 6 weeks | AI Education Officer, Garden | CV, AI Education Officer |
+| −36% to −61% wall time | Software Factory, Great Hall | `esharif20/herdr-software-factory` README at `81ac5e7`, Status table, "Time vs solo": bench10 −61%, bench11 −36%, bench12 −42%. The same rows are in `docs/08-mvp.md` with the run times and costs. |
+| 3 of 3 benchmarks with equal or better hidden-test scores | Software Factory | Same table, "Hidden tests (team / solo)": 203 / 203 of 205, 172 / 171 of 172, 140 / 140 of 140. |
+| −24% to +8% cost | Software Factory | Same table, "Cost vs solo": −14%, −24%, +8%. |
+| 15% cost cap (a rule, stated in the approach Panel, not a result) | Software Factory | Same README, "The goal in one line": "at most 15% above solo (a hard cap)". |
+| 8 s to under 300 ms | Finance Agent | `esharif20/finance-agent` pull request #323, "Overview: summary 8 s → <300 ms; instant month switching", merged 2026-11-08. |
+| 150+ merged pull requests | Finance Agent | `gh pr list -R esharif20/finance-agent --state merged` returned 159 on 2026-11-13. |
+| 6 fictional households | Finance Agent | `esharif20/finance-agent` README at `874121b`, Demo: "six fictional households". |
+
+The Software Factory benchmarks were run and reported by Eshan in that repo. Nothing here re-ran them.
 
 ## Site
 
 - Name: Eshan Sharif
-- Line: Software engineer. Firmware, computer vision and AI agents.
+- Line: Software engineer. Firmware, computer vision and AI agents. *(Sample: a proposed one-line summary.)*
 - City: London
 - Email: esharif2004@gmail.com
 - LinkedIn: https://www.linkedin.com/in/eshan-sharif
@@ -34,7 +59,7 @@ No phone number appears anywhere on the site. Clients of PA Consulting are not n
 
 ### Entrance
 
-Stands for: Where the work starts: the degree, the city, the first job.
+Stands for: Where the work starts: the degree, the city, the first job. *(Sample.)*
 
 - BSc Computer Science, First Class Honours.
 - University of Warwick, 2023 to 2026.
@@ -43,7 +68,7 @@ Stands for: Where the work starts: the degree, the city, the first job.
 
 ### Workshop
 
-Stands for: Engineering at PA Consulting: firmware, devices and the pipelines that ship them.
+Stands for: Engineering at PA Consulting: firmware, devices and the pipelines that ship them. *(Sample.)*
 
 - Embedded C++ on Zephyr RTOS for medical devices.
 - Signed image capture on a Raspberry Pi.
@@ -51,7 +76,7 @@ Stands for: Engineering at PA Consulting: firmware, devices and the pipelines th
 
 ### Study
 
-Stands for: Research and coursework: compilers, pathology and language models.
+Stands for: Research and coursework: compilers, pathology and language models. *(Sample.)*
 
 - A C compiler that emits LLVM IR.
 - Gigapixel slide analysis at the TIA Centre.
@@ -59,7 +84,7 @@ Stands for: Research and coursework: compilers, pathology and language models.
 
 ### Lookout
 
-Stands for: Computer vision: reading a match from one camera and a forest through cloud.
+Stands for: Computer vision: reading a match from one camera and a forest through cloud. *(Sample.)*
 
 - Players tracked at 0.916 IDF1 from broadcast video.
 - 6,545 ha of forest loss flagged from radar.
@@ -67,7 +92,7 @@ Stands for: Computer vision: reading a match from one camera and a forest throug
 
 ### Great Hall
 
-Stands for: AI agents: systems that do the work and show their working.
+Stands for: AI agents: systems that do the work and show their working. *(Sample.)*
 
 - A team of coding agents 36% to 61% faster than one model alone.
 - A finance assistant whose figures come from the ledger, never the model.
@@ -75,7 +100,7 @@ Stands for: AI agents: systems that do the work and show their working.
 
 ### Garden
 
-Stands for: Teaching and community outside the day job.
+Stands for: Teaching and community outside the day job. *(Sample.)*
 
 - Taught 60+ students to train their first models.
 - Residential Community Assistant at Warwick.
@@ -104,7 +129,7 @@ Firmware and AI tooling for regulated clients. Medical devices on one side, a fi
 
 Cambridge, UK. 2025-06 to 2025-08. Room: workshop.
 
-A camera app that proves a photo has not been changed since it was taken, built end to end and deployed on a client's own servers.
+A camera app that proves a photo has not been changed since it was taken, built end to end and deployed on PA's own air-gapped servers.
 
 - Built a React Native capture app with a FastAPI backend on a Raspberry Pi. Each image is signed with C2PA at the moment of capture.
 - Designed tamper detection that re-derives an image's hashes and compares them with its C2PA manifest, backed by Lab colour watermarks.
@@ -155,7 +180,7 @@ London, UK. 2024-07 to 2024-09. Room: entrance.
 Code that keeps clinical trial data consistent across several regulated trials at once.
 
 - Wrote C# functions and automated electronic data capture workflows across concurrent trials.
-- Connected the capture systems to clinical databases so discrepancies were caught automatically, cutting manual reconciliation.
+- Connected the capture systems to clinical databases and caught discrepancies between them, cutting manual reconciliation.
 
 ## Projects
 
@@ -178,6 +203,8 @@ Figures:
 
 A broadcast feed is one moving camera that cuts, zooms and loses players off screen. The question was how much tactical analysis that single feed can still support.
 
+*Sample: the whole Panel is context that no source states.*
+
 **approach: Track, classify, then explain**
 
 YOLOv8x and ByteTrack follow every player. A 2.5D CNN with a calibrated cascade labels events. A language model then writes commentary from the numbers, checked by an evaluation harness with FActScore, G-Eval and a 58-question test set judged by Claude Haiku and GPT-4o.
@@ -186,7 +213,7 @@ Figure: 24 FPS, with ONNX FP16 batching on a RunPod GPU worker
 
 **result: Fewer invented numbers**
 
-Tracking reached 0.916 IDF1. Event macro F1 rose from 0.516 to 0.647. Linear probes on Qwen2-VL-7B showed it read statistics better from text than from charts, and switching inputs raised grounding from 48.7% to 70.2%.
+Tracking reached 0.916 IDF1. Event macro F1 rose from 0.516 to 0.647. Linear probes on Qwen2-VL-7B compared text inputs with chart inputs, to stop invented statistics. Grounding rose from 48.7% to 70.2%.
 
 Figure: 70.2%, of stated statistics grounded in the data
 
@@ -208,13 +235,15 @@ Figures:
 
 Carbon credits depend on proving a forest still stands. Optical satellites cannot see through cloud, so loss under cloud cover goes unrecorded and the carbon checks fail.
 
+*Sample: the first sentence. The rest restates the CV.*
+
 **approach: Radar instead of light**
 
 Sentinel-1 radar passes through cloud. Eight years of it over 100,000 ha came in through Earth Engine. A Docker API, an MCP server and a dashboard went to Cloud Run, built with Claude sub-agents.
 
 Figure: 8 years, of radar over 100,000 ha
 
-**result: Loss that optical imagery missed**
+**result: Forest loss, found by radar**
 
 The system flagged 6,545 ha of forest loss and won the hardest of the challenge tracks, against 25 teams.
 
@@ -237,7 +266,9 @@ Figures:
 
 Source code is just characters. A compiler has to turn it into a structure it can check, then into instructions a machine can run, and say exactly where the programmer went wrong.
 
-**approach: Every stage by hand**
+*Sample: the whole Panel.*
+
+**approach: Every stage, source to binary**
 
 A lexer and parser build a full syntax tree. Semantic analysis checks it against scoped symbol tables. Code generation emits LLVM IR for expressions and control flow, and llc and clang link it into x86-64 binaries.
 
@@ -257,23 +288,23 @@ Stack: Claude Code, Herdr, JavaScript, Shell, git worktrees
 
 Figures:
 
-- −36% to −61%: wall time against one Opus session
-- 15%: hard cap on extra cost
-- 3: benchmarks beaten on speed, quality and cost
+- −36% to −61%: wall time against one Opus session, on three benchmarks
+- 3 of 3: benchmarks with hidden-test scores equal to or above the solo run
+- −24% to +8%: cost against the solo run
 
 **problem: One agent is a bottleneck**
 
 A single coding agent works one file at a time. Splitting the work between agents usually costs more and breaks more than it saves.
 
+*Sample: the whole Panel.*
+
 **approach: A Lead, lanes and checks**
 
-A Lead plans the work into lanes that never touch the same files. Builders work in their own git worktrees. Scripts run the tests and merge by exact commit, and a reviewer reads the riskiest changes. The build log is public.
-
-Figure: 15%, most extra cost allowed over one agent
+A Lead plans the work into lanes that never touch the same files. Builders work in their own git worktrees. Scripts run the tests and merge by exact commit, and a reviewer reads the riskiest changes. One rule was set before any run: the team may cost at most 15% more than one agent. The build log is public.
 
 **result: Faster at the same quality**
 
-On three benchmarks the team finished 36% to 61% sooner than one Opus session, passed the same hidden tests or more, and stayed inside the cost cap.
+On three benchmarks the team finished 36% to 61% sooner than one Opus session. It passed as many hidden tests or more each time. Cost ranged from 24% less to 8% more, inside the cap.
 
 Figure: −61%, wall time on the best benchmark
 
@@ -288,12 +319,14 @@ Stack: Python, FastAPI, TypeScript, React, SQLCipher, Ollama, GSAP
 Figures:
 
 - 8 s → <300 ms: to load the monthly summary
-- 29: merged pull requests
-- 0: figures written by the model
+- 150+: merged pull requests
+- 6: fictional households in the public demo
 
 **problem: Bank data is too private for the cloud**
 
 Budgeting apps send every transaction to someone else's server, and chat assistants invent numbers. A finance tool needs to keep the data at home and get the sums right.
+
+*Sample: the whole Panel.*
 
 **approach: Local, encrypted, read-only**
 
@@ -301,16 +334,18 @@ Transactions land in a SQLCipher ledger with its key in the Keychain. Rules, cor
 
 **result: Fast, and the numbers add up**
 
-The monthly summary went from 8 seconds to under 300 ms. Every figure in an answer comes from the ledger, and the public demo runs on synthetic households.
+The monthly summary went from 8 seconds to under 300 ms. Every figure in an answer comes from the ledger, and the public demo runs on six fictional households.
 
 Figure: <300 ms, monthly summary, down from 8 s
 
 ## Samples
 
-These sentences add context that is not in the CV, LinkedIn or a repo README:
+Sentences that say something no source states. Each is also marked where it appears above.
 
-- Football Intelligence, problem: "A broadcast feed is one moving camera that cuts, zooms and loses players off screen."
-- Mini C Compiler, problem: the whole Panel.
-- Software Factory, problem: "Splitting the work between agents usually costs more and breaks more than it saves."
-- Finance Agent, problem: "Budgeting apps send every transaction to someone else's server, and chat assistants invent numbers."
+- Site line: a proposed one-line summary.
 - Every Room's "Stands for" line.
+- Football Intelligence, problem: the whole Panel.
+- Deforestation Detection, problem: "Carbon credits depend on proving a forest still stands."
+- Mini C Compiler, problem: the whole Panel.
+- Software Factory, problem: the whole Panel.
+- Finance Agent, problem: the whole Panel.
