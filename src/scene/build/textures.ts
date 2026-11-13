@@ -160,7 +160,7 @@ export function planSheet(): THREE.CanvasTexture {
 export type PlanRoom = { name: string; x: number; z: number; w: number; d: number; mats?: boolean };
 
 const PLAN_PX = 96;
-const DISPLAY = '800 44px "Shippori Mincho B1", "Hiragino Mincho ProN", Georgia, serif';
+const DISPLAY = 'italic 400 52px "Instrument Serif", Georgia, serif';
 
 /**
  * A floor drawn as a plan: every room outlined, floored with mats and named.

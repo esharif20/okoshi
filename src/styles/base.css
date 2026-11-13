@@ -15,10 +15,22 @@
   }
   h1, h2, h3 {
     font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.02;
+    font-weight: 850;
+    font-stretch: 122%;
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+    line-height: 0.9;
     margin: 0;
+  }
+  /* The accent voice inside a heading: <em> is set in the serif italic, in sentence case, in the seal red. */
+  :is(h1, h2, h3, h4, .accent-voice) em {
+    font-family: var(--font-accent);
+    font-style: italic;
+    font-weight: 400;
+    font-stretch: 100%;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    color: var(--accent);
   }
   p { margin: 0; }
   a { color: inherit; }

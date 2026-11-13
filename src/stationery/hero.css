@@ -71,29 +71,13 @@
   opacity: calc(1 - var(--progress, 0) * 12);
   pointer-events: none;
 }
+.hero-title h1 em { font-size: 1.16em; letter-spacing: -0.03em; }
 .hero-title h1 {
-  font-size: clamp(3.5rem, 15.4vw, 19rem);
-  line-height: 0.9;
+  font-size: clamp(3rem, 12.6vw, 15.5rem);
+  line-height: 0.82;
   white-space: nowrap;
   /* Travelling fast pulls the name apart into its inks, as a misregistered print would. */
   text-shadow: calc(var(--speed, 0) * -14px) 0 rgb(200 32 47 / 0.75), calc(var(--speed, 0) * 14px) 0 rgb(64 150 168 / 0.75);
-}
-
-.hero-person {
-  position: absolute;
-  z-index: 1;
-  right: clamp(4rem, 14vw, 16rem);
-  bottom: 0;
-  height: min(84svh, 60vw);
-  translate: 0 calc(var(--progress, 0) * 1500svh);
-  pointer-events: none;
-}
-.hero-person img {
-  display: block;
-  height: 112%;
-  width: auto;
-  /* A contact shadow so he stands in the picture's light instead of floating on it. */
-  filter: drop-shadow(-18px 10px 22px rgb(31 48 56 / 0.3));
 }
 
 /* What he does, set as one statement: the nouns large in the display face, the joining words small between them. */
@@ -103,15 +87,19 @@
   left: var(--margin);
   bottom: clamp(5.5rem, 13svh, 8rem);
   max-width: 13ch;
-  font: 800 clamp(2rem, 4.3vw, 5rem) / 0.98 var(--font-display);
-  letter-spacing: -0.03em;
+  font: 850 clamp(1.8rem, 3.5vw, 4.2rem) / 0.94 var(--font-display);
+  font-stretch: 122%;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
   translate: 0 calc(var(--progress, 0) * -40svh);
   opacity: calc(1 - var(--progress, 0) * 14);
   pointer-events: none;
 }
+.hero-claim em { font: italic 400 1.2em / 0.9 var(--font-accent); text-transform: none; letter-spacing: -0.02em; color: var(--accent); }
 .hero-claim small {
-  font: 700 0.24em / 1 var(--font-text);
-  letter-spacing: 0.06em;
+  font: 650 0.26em / 1 var(--font-text);
+  font-stretch: 100%;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   vertical-align: 0.5em;
 }
@@ -122,7 +110,6 @@
   .hero-nav, .hero-clock { display: none; }
   .hero-title { left: 16px; right: 16px; top: 5.5rem; }
   .hero-title h1 { white-space: normal; font-size: 23vw; }
-  .hero-person { right: -1rem; height: 62svh; }
   .hero-claim { left: 16px; bottom: 2rem; max-width: 9ch; font-size: 9vw; }
 }
 

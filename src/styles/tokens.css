@@ -12,8 +12,11 @@
   --tone-on-ink: color-mix(in srgb, var(--bg) 24%, var(--ink)); /* Screentone dots on an ink field */
   --muted-on-ink: color-mix(in srgb, var(--bg) 76%, var(--ink)); /* secondary notes on an ink field */
 
-  --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", Georgia, serif;
-  --font-text: "Zen Kaku Gothic New", system-ui, sans-serif;
+  /* Mona Sans, heavy and wide, in capitals for display; the same face at normal width for reading.
+     Instrument Serif in italic for the one or two words in a heading that carry it. */
+  --font-display: "Mona Sans Variable", "Arial Black", sans-serif;
+  --font-text: "Mona Sans Variable", system-ui, sans-serif;
+  --font-accent: "Instrument Serif", Georgia, serif;
 
   --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
   --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
@@ -45,6 +48,9 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
-  --font-display: var(--font-display);
-  --font-text: var(--font-text);
+  /* Mona Sans, heavy and wide, in capitals for display; the same face at normal width for reading.
+     Instrument Serif in italic for the one or two words in a heading that carry it. */
+  --font-display: "Mona Sans Variable", "Arial Black", sans-serif;
+  --font-text: "Mona Sans Variable", system-ui, sans-serif;
+  --font-accent: "Instrument Serif", Georgia, serif;
 }
