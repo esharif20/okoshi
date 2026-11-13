@@ -7,7 +7,7 @@ export type Pose = { position: V3; target: V3; up: V3 };
 /** Orbit pose: `polar` is the angle from straight overhead, `azimuth` swings the camera to the right. */
 export type Orbit = { target: V3; polar: number; azimuth: number; distance: number };
 
-export const FOV = 20; // degrees; long lens, so the House reads like a print
+export const FOV = 15; // degrees; a long lens, so the buildings read like a print and the ranges stand tall
 
 export function orbitPose(o: Orbit): Pose {
   const sp = Math.sin(o.polar), cp = Math.cos(o.polar);
@@ -18,12 +18,6 @@ export function orbitPose(o: Orbit): Pose {
     // The tangent of the orbit pointing towards overhead: well defined even looking straight down.
     up: [-cp * sa, sp, -cp * ca],
   };
-}
-
-/** Looking straight down so that one world unit covers `pxPerUnit` pixels and world point `centre` is mid-screen. */
-export function overheadOrbit(centre: [number, number], pxPerUnit: number, viewportHeight: number): Orbit {
-  const distance = viewportHeight / (2 * pxPerUnit * Math.tan((FOV * Math.PI) / 360));
-  return { target: [centre[0], 0, centre[1]], polar: 0, azimuth: 0, distance };
 }
 
 const smooth = (u: number) => u * u * (3 - 2 * u);

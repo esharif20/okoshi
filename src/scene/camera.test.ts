@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { orbitAt, orbitPose, overheadOrbit, FOV } from "./camera";
+import { orbitAt, orbitPose } from "./camera";
 
 describe("camera", () => {
   it("looks straight down with screen-up pointing away from the viewer at polar 0", () => {
@@ -8,11 +8,6 @@ describe("camera", () => {
     expect(p.up[0]).toBeCloseTo(0);
     expect(p.up[1]).toBeCloseTo(0);
     expect(p.up[2]).toBeCloseTo(-1);
-  });
-  it("overhead distance makes one unit span the requested pixels", () => {
-    const o = overheadOrbit([0, 0], 50, 900);
-    const visibleUnits = 2 * o.distance * Math.tan((FOV * Math.PI) / 360);
-    expect(900 / visibleUnits).toBeCloseTo(50);
   });
   it("holds at the ends and moves monotonically between keys", () => {
     const a = { target: [0, 0, 0] as [number, number, number], polar: 0, azimuth: 0, distance: 10 };

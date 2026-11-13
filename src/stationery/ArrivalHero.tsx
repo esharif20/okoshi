@@ -1,21 +1,22 @@
 import { site } from "~/content";
+import { DioramaSlot } from "~/scene/DioramaSlot";
 import { Clock } from "~/ui/Clock";
 import { Portrait } from "~/ui/Portrait";
 import { SealButton } from "~/ui/SealButton";
-import { DioramaSlot } from "~/scene/DioramaSlot";
-import { HousePlan } from "./HousePlan";
 import "./hero.css";
 
-// The first screen: the Sheet lying on the table, cut off by the bottom of the screen.
-export function SheetHero() {
-  const [first, ...rest] = site.name.split(" ");
+// The first screen: the painted landscape fills it, with the name set in the sky.
+// The same element stays pinned through the Opening sequence while the Diorama plays behind the words.
+export function ArrivalHero() {
   const contact = site.email ? `mailto:${site.email}` : "#contact";
   return (
     <div className="hero" data-stage>
+      <DioramaSlot className="hero-canvas" />
+
       <header className="hero-top">
         <div className="hero-left">
           <a className="hero-id" href="#about" aria-label={`About ${site.name}`}>
-            <Portrait name={site.name} />
+            <Portrait name={site.name} size={56} />
           </a>
           <Clock className="hero-clock" />
         </div>
@@ -27,19 +28,10 @@ export function SheetHero() {
         <SealButton href={contact}>Get in touch</SealButton>
       </header>
 
-      <div className="sheet" data-sheet>
-        <i className="sheet-corner tl" />
-        <i className="sheet-corner tr" />
-        <h1 className="sheet-name">
-          <span>{first}</span>
-          <span>{rest.join(" ")}</span>
-        </h1>
-        <p className="sheet-line">{site.line}</p>
-        <div className="sheet-plan" data-plan>
-          <HousePlan />
-        </div>
+      <div className="hero-title">
+        <h1>{site.name}</h1>
+        <p>{site.line}</p>
       </div>
-      <DioramaSlot className="hero-canvas" />
     </div>
   );
 }
