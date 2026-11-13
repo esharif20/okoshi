@@ -69,6 +69,11 @@ Every push to `main` runs `.github/workflows/deploy.yml`: check, test, build, th
 The site is built for the Pages address under `/okoshi/`. On its own domain it lives at `/`.
 
 1. In `.github/workflows/deploy.yml`, change `BASE_PATH: /okoshi/` to `BASE_PATH: /`.
-2. Add `public/CNAME` containing the domain, for example `eshansharif.com`.
-3. At the DNS provider, point the domain at GitHub Pages: a `CNAME` record to `esharif20.github.io` for a subdomain, or the four GitHub Pages `A` records for an apex domain.
-4. In the repo's Settings, under Pages, enter the domain and turn on Enforce HTTPS once the certificate is issued.
+2. In the same file, replace the step that lifts `build/client/okoshi/` to the root. At `/` there is no such folder and the fallback page has another name:
+
+   ```yaml
+   - run: cp build/client/__spa-fallback.html build/client/404.html && touch build/client/.nojekyll
+   ```
+3. Add `public/CNAME` containing the domain, for example `eshansharif.com`.
+4. At the DNS provider, point the domain at GitHub Pages: a `CNAME` record to `esharif20.github.io` for a subdomain, or the four GitHub Pages `A` records for an apex domain.
+5. In the repo's Settings, under Pages, enter the domain and turn on Enforce HTTPS once the certificate is issued.
