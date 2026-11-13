@@ -13,3 +13,4 @@ dist/
 docs/planning/
 build/
 .react-router/
+.tsf/shots/
