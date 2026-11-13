@@ -1,0 +1,13 @@
+# private inputs: never publish
+docs/*.pdf
+docs/linkedin*.png
+docs/me*.JPG
+docs/references/
+.tsf/research/
+.tsf/lanes/
+.taste-skill/
+# build
+node_modules/
+dist/
+.DS_Store
+docs/planning/
